@@ -1,0 +1,15 @@
+﻿build/
+build*/
+work_liteos_pool*/
+.vscode/
+__pycache__/
+.pytest_cache/
+*.obj
+*.o
+*.elf
+*.map
+*.log
+
+dependencies.lock
+out
+managed_components

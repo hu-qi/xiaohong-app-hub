@@ -1,0 +1,34 @@
+# MIT License
+#
+# Copyright (c) 2026 Shenzhen Open Source Co-Creation Technology Co., Ltd. (AtomGit)
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+declare_args() {
+  config_ohos_enable = true
+  config_board_name  = "xiaohong_ws63_kb"
+  config_log_enable  = true
+  config_sle_enable  = true   # SLE-HID: 键盘作为SLE外设, 需要通过SLE-Dongle与PC桥接使用
+  config_ble_enable  = false  # BLE-HID: 键盘作为BLE外设, 直接被PC(蓝牙Central)扫描、连接和使用
+                              # 功能尚未完全稳定，仅供感兴趣的开发者试用、完善、改进，欢迎提交PR
+  config_lcd_panel   = "lcd_ST7789_240x240"  # "lcd_ST7735R_128x128" or else
+  config_lvgl_enable = true
+
+  config_network_enable = true
+}

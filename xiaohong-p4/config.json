@@ -1,0 +1,43 @@
+{
+  "product_name": "xiaohong-p4",
+  "type": "mini",
+  "version": "3.0",
+  "ohos_version": "OpenHarmony 1.0",
+  "device_company": "atomgit",
+  "device_build_path": "device/board/atomgit/xiaohong-p4",
+  "board": "xiaohong-p4",
+  "kernel_type": "liteos_m",
+  "kernel_version": "",
+  "third_party_dir": "",
+  "product_adapter_dir": "//vendor/atomgit/xiaohong-p4/hals",
+  "force_link_libs": [
+    "bootstrap"
+  ],
+  "subsystems": [
+    {
+      "subsystem": "kernel",
+      "components": [
+        {
+          "component": "liteos_m",
+          "features": []
+        }
+      ]
+    },
+    {
+      "subsystem": "startup",
+      "components": [
+        {
+          "component": "bootstrap_lite",
+          "features": []
+        },
+        {
+          "component": "init",
+          "features": [
+            "init_feature_begetctl_liteos = true",
+            "init_lite_use_posix_file_api = true"
+          ]
+        }
+      ]
+    }
+  ]
+}

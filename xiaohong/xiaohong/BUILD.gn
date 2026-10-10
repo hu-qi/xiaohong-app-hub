@@ -1,0 +1,271 @@
+# MIT License
+#
+# Copyright (c) 2026 Shenzhen Open Source Co-Creation Technology Co., Ltd. (AtomGit)
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+import("//vendor/atomgit/xiaohong/ws63_sdk.gni")
+import("config.gni")
+
+static_library("xiaohong") {
+  # main task entry and common APIs
+  sources = [
+    "src/main.c",
+    "src/task_entry.c",
+    "src/settings.c",
+  ]
+  defines = [
+    "FW_VERSION=0x020100",    # 固件版本: 0x010203 = 1.2.3
+    "SUPPORT_DELETE_FONT=0",  # 是否支持在配网页面操作删除已有字库
+  ]
+  if (config_ohos_enable) {
+    defines += [
+      "SUPPORT_OHOS=1",         # [1]with ohos fwk [0]only fbb-ws63 SDK, no ohos fwk
+    ]
+  }
+  include_dirs = [
+    "src",
+    "src/boards",
+  ]
+
+  # external log
+  if (config_log_enable) {
+    defines += [ "DEFAULT_LOG_LEVEL=LOG_ERROR" ]
+    sources += [
+      "src/log/log.c",
+    ]
+    include_dirs += [
+      "src/log",
+    ]
+  }
+
+  # hw and board config, low level APIs
+  if (config_board_name == "xiaohong_ws63_v1") {
+    defines += [ "BOARD_XH_WS63_V1" ]
+    sources += [
+      "src/boards/xiaohong_ws63_v1/board_config.c",
+      "src/boards/xiaohong_ws63_v1/key_config.c",
+      "src/boards/xiaohong_ws63_v1/w25q128.c",
+    ]
+    include_dirs += [
+      "src/boards/xiaohong_ws63_v1",
+    ]
+  }
+
+  # lfs for ext nor-flash
+  if (config_lfs_enable) {
+    defines += [ "SUPPORT_LFS=1" ]
+    sources += [
+      "src/littlefs/littlefs_adapt.c",
+    ]
+    include_dirs += [
+      "src/littlefs",
+    ]
+  }
+
+  # oled display hw and driver
+  if (config_lcd_panel == "lcd_ST7789S_240x240") {
+    defines += [ "LCD_ST7789S_240x240" ]
+    sources += [
+      "src/display/lcd_st7789/lcd_st7789_driver.c",
+    ]
+    include_dirs += [
+      "src/display",
+      "src/display/lcd_st7789",
+    ]
+  }
+
+  # lvgl for display
+  if (config_lvgl_enable) {
+    defines += [
+      "SUPPORT_LVGL",
+    ]
+    sources += [
+      "src/display/disp_driver.c",
+      "src/display/lvgl_task.c",
+      "src/display/lvgl_ui_layout.c",
+      "src/display/lvgl/lv_fs_lfs_adapt.c",
+      "src/display/lvgl/lv_font_stream_bin.c",
+      "src/display/lvgl/lv_font_lfs_binfont.c",
+      "src/display/lvgl/lv_font_FontAwesom5_18.c",
+      "src/display/lvgl/lv_font_segui_emoji_68.c",
+      "src/display/lvgl/lv_font_SourceHanSerifCN_SemiBold_22_Default.c",
+    ]
+    include_dirs += [
+      "src/display/lvgl",
+      "${ws63_sdk_path}/open_source/lvgl",
+    ]
+
+    # app hub and games
+    sources += [
+      "src/apps/app_hub.c",
+      "src/apps/app_registry.c",
+      "src/apps/app_installer.c",
+      "src/apps/snake/snake_game.c",
+      "src/apps/tetris/tetris_game.c",
+      "src/apps/breakout/breakout_game.c",
+      "src/apps/liquid_duck/liquid_duck.c",
+    ]
+    include_dirs += [
+      "src/apps",
+      "src/apps/snake",
+      "src/apps/tetris",
+      "src/apps/breakout",
+      "src/apps/liquid_duck",
+    ]
+  }
+
+  # network
+    defines += []
+    sources += [
+      "src/network/http_lfs_download.c",
+      "src/network/net_http_server.c",
+      "src/network/net_wifi_hotspot.c",
+      "src/network/net_wifi_recfg_task.c",
+      "src/network/net_wifi_station.c",
+      "src/network/net_wifi_task.c",
+    ]
+    include_dirs += [
+      "src/network",
+    ]
+
+  # agent for up and down data bridge
+    sources += [
+      "src/agent/agent_task.c",
+    ]
+    include_dirs += [
+      "src/agent",
+    ]
+  # audio data process hw ci1302
+    defines += [
+      # TTS: WS63 解码后 0x020B 下发 PCM 给 CI1302; sdkv106 已打包 libopus, 此处不再显式链 opus
+      "CI1302_TTS_DECODE_OPUS_TO_PCM=1",
+    ]
+    sources += [
+      "src/audio/ci1302/ci1302_audio_listen_task.c",
+      "src/audio/ci1302/ci1302_uart_ring.c",
+      "src/audio/ci1302/ci1302_audio_play_task.c",
+      "src/audio/ci1302/ci1302_data_process.c",
+      "src/audio/ci1302/ci1302_opus_uplink.c",
+      "src/audio/ci1302/ci1302_opus_decode.c",
+      "src/audio/ci1302/ci1302_tts_downlink.c",
+    ]
+    include_dirs += [
+      "src/audio",
+      "src/audio/ci1302",
+      "src/audio/ci1302/opus",
+      "${ws63_sdk_path}/open_source/opus/include",
+    ]
+
+  # protocol for up and down data bridge
+    sources += [
+      "src/protocols/protocol.c",
+    ]
+    include_dirs += [
+      "src/protocols",
+      "${ws63_sdk_path}/open_source/cjson/cjson",
+    ]
+
+    # MG_ARCH: 非 CUSTOM 时不会包含 mongoose_config.h
+    # MG_IO_SIZE: 编译期宏，会覆盖 mongoose_config.h; 必须与后者语义一致.
+    #   过小影响 WS 大帧; 过大在字库下载等场景易 mg_iobuf_resize OOM。
+    # MG_ENABLE_CUSTOM_RANDOM: 跳过 mongoose.c 内置 mg_random(避免与 mongoose_port_random.c 重复定义)
+    # MG_TLS: 3 = MG_TLS_BUILTIN(mongoose 自带 TLS1.3 客户端实现)
+    #   不用 1(MG_TLS_MBED): SDK 实际链接的那份 libmbedtls.a 缺 ECDHE-RSA 套件、
+    #   未编入 TLS1.3, 且无 psa_crypto_init 符号 —— 与本服务器(xh-ota.atomgit.com
+    #   只接受 ECDHE-RSA/TLS1.3)握不上手，且 mongoose 的 mbedTLS 后端会引用
+    #   不存在的 PSA 符号而链接失败。builtin 完全不经 mbedtls, 绕开以上问题。
+    defines += [
+      "MG_ARCH=0",
+      "MG_TLS=3",
+      "MG_IO_SIZE=4096",
+      "MG_WS_USE_PRINTF=0",
+      "MG_ENABLE_CUSTOM_RANDOM=1",
+    ]
+    sources += [
+      "src/protocols/mongoose_protocol.c",
+      "src/protocols/mongoose/mongoose.c",
+      "src/protocols/mongoose/mongoose_port_random.c",
+      # TLS 接线：内嵌 CA + 按 URL 决定是否启用 TLS(https/wss)。
+      # 所有 mg_http_connect()/mg_ws_connect() 调用点在建连后调用 xh_tls_apply()。
+      "src/protocols/xh_tls.c",
+    ]
+    include_dirs += [
+      "src/protocols/mongoose",
+    ]
+
+  # ota and font download
+  if (config_ota_enable) {
+    sources += [
+      "src/ota/ota.c",
+      "src/ota/ota_http.c",
+      "src/ota/font_download.c",
+      "src/ota/ota_fw_upgrade.c",
+    ]
+    include_dirs += [
+      "src/ota",
+    ]
+  }
+
+  if (config_ohos_enable) {
+    include_dirs += [
+      "//utils/native/lite/include",
+      "//kernel/liteos_m/kal",
+      "//base/startup/init/interfaces/innerkits/include/syspara",
+    ]
+  }
+
+  include_dirs += [
+    "${ws63_sdk_path}/include/driver",
+    "${ws63_sdk_path}/drivers/drivers/hal/reboot",
+    "${ws63_sdk_path}/drivers/drivers/hal/gpio",
+    "${ws63_sdk_path}/drivers/drivers/hal/gpio/v150",
+    "${ws63_sdk_path}/drivers/chips/ws63/porting/pinctrl",
+    "${ws63_sdk_path}/drivers/chips/ws63/porting/gpio",
+    "${ws63_sdk_path}/drivers/chips/ws63/porting/adc",
+
+    "${ws63_sdk_path}/kernel/liteos/liteos_v208.5.0/Huawei_LiteOS/compat/linux/include",
+    "${ws63_sdk_path}/kernel/osal/include",
+    "${ws63_sdk_path}/kernel/osal/include/debug",
+    "${ws63_sdk_path}/kernel/osal/include/schedule",
+    "${ws63_sdk_path}/kernel/osal/include/interrupt",
+
+    "${ws63_sdk_path}/drivers/drivers/hal/spi",
+    "${ws63_sdk_path}/drivers/drivers/hal/spi/v151",
+    "${ws63_sdk_path}/drivers/chips/ws63/porting/spi",
+
+    "${ws63_sdk_path}/drivers/drivers/hal/uart",
+    "${ws63_sdk_path}/drivers/chips/ws63/porting/uart",
+
+    "${ws63_sdk_path}/drivers/drivers/hal/timer",
+    "${ws63_sdk_path}/drivers/chips/ws63/porting/timer",
+
+    "${ws63_sdk_path}/drivers/chips/ws63/porting/dma",
+
+    "${ws63_sdk_path}/include/middleware/utils",
+    "${ws63_sdk_path}/include/middleware/services/wifi",
+    "${ws63_sdk_path}/open_source/lwip/lwip_v2.1.3/src/include",
+    "${ws63_sdk_path}/open_source/lwip/lwip_adapter/liteos_207/src/include",
+    "${ws63_sdk_path}/open_source/littlefs/v2.5.0",
+    "${ws63_sdk_path}/middleware/utils/common_headers/native",
+    "${ws63_sdk_path}/middleware/chips/ws63/nv/nv_config/include",
+    "${ws63_sdk_path}/middleware/utils/dfx/dfx_reboot/cpu_utils/public",
+    "${ws63_sdk_path}/middleware/utils/dfx/dfx_reboot/reboot/shared",
+  ]
+}

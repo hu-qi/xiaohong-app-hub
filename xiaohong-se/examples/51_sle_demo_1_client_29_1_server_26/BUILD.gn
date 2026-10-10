@@ -1,0 +1,136 @@
+# MIT License
+#
+# Copyright (c) 2026 Shenzhen Open Source Co-Creation Technology Co., Ltd. (AtomGit)
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+declare_args() {
+  config_sle_role = 0  # [1]:sle server      / [0]:sle client
+  config_sle_api  = 1  # [1]:OH API          / [0]:WS63 SDK API
+  config_mac_addr = 0  # [1]:custom mac addr / [0]:random mac addr
+
+  # sle_client_demo_1_sht30_sensor
+  config_enable_sht30_client = 1
+  sht30_i2c_bus = 1
+  sht30_i2c_scl_pin = 16
+  sht30_i2c_sda_pin = 15
+  sht30_i2c_pin_mode = 2
+  sht30_i2c_baud = 400000
+  sht30_addr_7b = 68
+  # sle_client_demo_1_sht30_sensor
+  # sle_server_demo_1_fan
+  config_enable_fan_server = 1
+  fan_gpio_pin = 9              # 风扇控制 GPIO 编号
+  fan_gpio_mode = 0
+  fan_trigger_threshold = 3300  # 温度高于33.00度时，打开风扇
+  fan_button_pin = 5            # 按键 GPIO 编号
+  fan_button_mode = 4
+  # sle_server_demo_1_fan
+}
+
+static_library("sle_demo_1_client_29_1_server_26") {
+  defines = [ "SLE_SERVER_NAME=\"n_client_m_server\"" ]
+  sources = []
+  include_dirs = []
+
+  if (config_sle_role == 1) {
+    defines += [ "SLE_N_CLIENT_1_SERVER=1" ]  # N 默认每个Server最多可以连接N个Client
+    sources += [
+      "sle_server_adv.c",
+      "sle_server.c",
+    ]
+    if (config_enable_fan_server == 1) {
+      sources += [
+        "sle_server_demo_1_fan.c",
+      ]
+      defines += [
+        "FAN_GPIO_PIN=$fan_gpio_pin",
+        "FAN_GPIO_MODE=$fan_gpio_mode",
+        "FAN_TRIGGER_THRESHOLD=$fan_trigger_threshold",
+        "FAN_BUTTON_PIN=$fan_button_pin",
+        "FAN_BUTTON_MODE=$fan_button_mode",
+      ]
+      include_dirs += [
+        "//device/soc/hisilicon/ws63v100/sdkv106/drivers/drivers/hal/gpio",
+        "//device/soc/hisilicon/ws63v100/sdkv106/drivers/drivers/hal/gpio/v150",
+        "//device/soc/hisilicon/ws63v100/sdkv106/drivers/chips/ws63/porting/gpio",
+      ]
+    } else {
+      sources += [
+        "sle_server_demo_0.c",
+      ]
+    }
+  } else {
+    defines += [ "SLE_1_CLIENT_M_SERVER=1" ]  # M 默认每个Client最多可以连接M个Server
+    sources += [
+      "sle_client.c",
+    ]
+
+    if (config_enable_sht30_client == 1) {
+      sources += [
+        "sht30.c",
+        "sle_client_demo_1_sht30_sensor.c",
+      ]
+      defines += [
+        "CONFIG_I2C_MASTER_BUS_ID=$sht30_i2c_bus",
+        "CONFIG_I2C_SCL_MASTER_PIN=$sht30_i2c_scl_pin",
+        "CONFIG_I2C_SDA_MASTER_PIN=$sht30_i2c_sda_pin",
+        "CONFIG_I2C_MASTER_PIN_MODE=$sht30_i2c_pin_mode",
+        "I2C_SET_BANDRATE=$sht30_i2c_baud",
+        "CONFIG_SHT30_I2C_ADDR_7B=$sht30_addr_7b",
+      ]
+      include_dirs += [
+        "//device/soc/hisilicon/ws63v100/sdkv106/drivers/chips/ws63/porting/i2c",
+        "//device/soc/hisilicon/ws63v100/sdkv106/drivers/drivers/hal/i2c",
+      ]
+    } else {
+      sources += [
+        "sle_client_demo_0.c",
+      ]
+    }
+  }
+
+
+
+  if (config_sle_api == 1) {
+    defines += [ "USE_OHOS_API=1" ]   # 使用OHOS封装的SLE API
+    sources += [ "sle_shim_weak.c" ]
+    include_dirs += [
+      "//device/soc/hisilicon/ws63v100/adapter/hals/communication/sle_lite/include",
+    ]
+  } else {
+    defines += [ "USE_OHOS_API=0" ]   # 使用海思WS63 SDK原生的SLE API
+  }
+
+  if (config_mac_addr == 1) {
+    defines += [ "USE_CUSTOM_MAC_ADDR=1" ]  # 用户自定义Client/Server的Mac地址
+  } else {
+    defines += [ "USE_CUSTOM_MAC_ADDR=0" ]  # 使用随机生成的Client/Server的Mac地址
+  }
+
+  include_dirs += [
+    "//device/soc/hisilicon/ws63v100/sdkv106/drivers/chips/ws63/rom/drivers/chips/ws63/porting/pinctrl",
+    "//device/soc/hisilicon/ws63v100/sdkv106/include/driver",
+    "//device/soc/hisilicon/ws63v100/sdkv106/include/middleware/services/bts/sle",
+    "//device/soc/hisilicon/ws63v100/sdkv106/kernel/osal/include/debug",
+    "//device/soc/hisilicon/ws63v100/sdkv106/kernel/osal/include/memory",
+    "//device/soc/hisilicon/ws63v100/sdkv106/kernel/osal/include/schedule",
+    "//device/soc/hisilicon/ws63v100/sdkv106/middleware/utils/common_headers/native",
+  ]
+}

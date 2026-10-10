@@ -1,0 +1,10 @@
+{
+  "parts": {
+    "product_xiaohong-kb": {
+      "module_list": [
+        "//vendor/atomgit/xiaohong-kb:xiaohong-kb"
+      ]
+    }
+  },
+  "subsystem": "product_xiaohong-kb"
+}

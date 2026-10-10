@@ -1,0 +1,74 @@
+# MIT License
+#
+# Copyright (c) 2026 Shenzhen Open Source Co-Creation Technology Co., Ltd. (AtomGit)
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+declare_args() {
+  config_sle_role = 0  # [1]:sle server      / [0]:sle client
+  config_sle_api  = 1  # [1]:OH API          / [0]:WS63 SDK API
+  config_mac_addr = 0  # [1]:custom mac addr / [0]:random mac addr
+}
+
+static_library("sle_demo_n_client_m_server") {
+  defines = [ "SLE_SERVER_NAME=\"n_client_m_server\"" ]
+  sources = []
+  include_dirs = []
+
+  if (config_sle_role == 1) {
+    sources += [
+      "sle_server_demo_0.c",
+      "sle_server_adv.c",
+      "sle_server.c",
+    ]
+    defines += [ "SLE_N_CLIENT_1_SERVER=2" ]  # N 默认每个Server最多可以连接N个Client
+  } else {
+    sources += [
+      "sle_client_demo_0.c",
+      "sle_client.c",
+    ]
+    defines += [ "SLE_1_CLIENT_M_SERVER=2" ]  # M 默认每个Client最多可以连接M个Server
+  }
+
+  if (config_sle_api == 1) {
+    defines += [ "USE_OHOS_API=1" ]   # 使用OHOS封装的SLE API
+    sources += [ "sle_shim_weak.c" ]
+    include_dirs += [
+      "//device/soc/hisilicon/ws63v100/adapter/hals/communication/sle_lite/include",
+    ]
+  } else {
+    defines += [ "USE_OHOS_API=0" ]   # 使用海思WS63 SDK原生的SLE API
+  }
+
+  if (config_mac_addr == 1) {
+    defines += [ "USE_CUSTOM_MAC_ADDR=1" ]  # 用户自定义Client/Server的Mac地址
+  } else {
+    defines += [ "USE_CUSTOM_MAC_ADDR=0" ]  # 使用随机生成的Client/Server的Mac地址
+  }
+
+  include_dirs += [
+    "//device/soc/hisilicon/ws63v100/sdkv106/drivers/chips/ws63/rom/drivers/chips/ws63/porting/pinctrl",
+    "//device/soc/hisilicon/ws63v100/sdkv106/include/driver",
+    "//device/soc/hisilicon/ws63v100/sdkv106/include/middleware/services/bts/sle",
+    "//device/soc/hisilicon/ws63v100/sdkv106/kernel/osal/include/debug",
+    "//device/soc/hisilicon/ws63v100/sdkv106/kernel/osal/include/memory",
+    "//device/soc/hisilicon/ws63v100/sdkv106/kernel/osal/include/schedule",
+    "//device/soc/hisilicon/ws63v100/sdkv106/middleware/utils/common_headers/native",
+  ]
+}
