@@ -11,4 +11,6 @@ enum {
  eKey_AppHub_Toggle,
  eKey_MaxCount
 };
+uint32_t key_init(void);
+uint8_t register_key_event_callback(key_event_callback_t cb);
 #endif
