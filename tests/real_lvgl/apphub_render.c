@@ -114,6 +114,40 @@ int main(int argc,char **argv) {
     xh_app_hub_handle_key(eKey_VolUp_ShortPressed); /* wrap Duck -> AI */
     xh_app_hub_handle_key(eKey_Wakeup_ShortPressed);
     assert(!xh_app_hub_is_active() && lv_scr_act()==ai);
+    /* Repeat the entire navigation/game/AI lifecycle to reveal leaks or
+     * fragmented LVGL heaps before spending WS63 hardware-flash time.
+     * Baseline measured after all game types were initialized once. */
+    lv_mem_monitor_t baseline, after;
+    lv_mem_monitor(&baseline);
+    const size_t baseline_free=baseline.free_size;
+    for(unsigned round=0;round<20;round++) {
+        xh_app_hub_open();
+        assert(xh_app_hub_is_active());
+        for(unsigned id=1;id<count;id++) {
+            xh_app_hub_handle_key(eKey_VolUp_ShortPressed);
+            lv_obj_t *hub=lv_scr_act();
+            xh_app_hub_handle_key(eKey_Wakeup_ShortPressed);
+            assert(lv_scr_act()!=hub);
+            xh_app_hub_handle_key(eKey_Wakeup_ShortPressed);
+            for(unsigned tick=0;tick<120;tick++) {
+                if(tick%17==0)xh_app_hub_handle_key(eKey_VolDw_ShortPressed);
+                if(tick%23==0)xh_app_hub_handle_key(eKey_VolUp_ShortPressed);
+                xh_app_hub_tick();
+            }
+            lv_refr_now(display);
+            xh_app_hub_handle_key(eKey_Wakeup_LongPressed);
+            assert(lv_scr_act()==hub);
+        }
+        xh_app_hub_handle_key(eKey_VolUp_ShortPressed);
+        xh_app_hub_handle_key(eKey_Wakeup_ShortPressed);
+        assert(!xh_app_hub_is_active() && lv_scr_act()==ai);
+        lv_refr_now(display);
+        lv_mem_monitor(&after);
+        assert(after.free_size+4096>=baseline_free &&
+               "App Hub/game cycles exhausted the LVGL heap");
+    }
+    printf("PASS: 20 additional complete game cycles; LVGL heap free baseline=%zu final=%zu\n",
+           baseline_free,after.free_size);
     printf("PASS: 5 native LVGL shape icons visible, 4 games launch/tick/exit, 240x240 render\n");
     return 0;
 }
