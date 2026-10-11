@@ -10,6 +10,8 @@ on:
       - "xiaohong/xiaohong/BUILD.gn"
       - "scripts/check_app_hub_visual.py"
       - "tests/host/**"
+      - "xiaohong/xiaohong/src/boards/xiaohong_ws63_v1/key_config.*"
+      - "xiaohong/xiaohong/src/boards/xiaohong_ws63_v1/volume_chord.*"
       - "tests/real_lvgl/**"
       - "scripts/ppm_to_png.py"
       - ".github/workflows/app-hub-visual.yml"
@@ -32,6 +34,23 @@ jobs:
             -o /tmp/xiaohong-app-hub-host-test
       - name: Run key and screen lifecycle tests
         run: /tmp/xiaohong-app-hub-host-test
+      - name: Compile and test pure two-button chord recognizer
+        run: |
+          cc -std=c11 -Wall -Wextra -Werror -pedantic \
+            -Ixiaohong/xiaohong/src/boards/xiaohong_ws63_v1 \
+            tests/host/test_volume_chord.c \
+            xiaohong/xiaohong/src/boards/xiaohong_ws63_v1/volume_chord.c \
+            -o /tmp/test-volume-chord
+          /tmp/test-volume-chord
+      - name: Compile and simulate actual board GPIO key driver
+        run: |
+          cc -std=c11 -Wall -Wextra -Werror -pedantic \
+            -Itests/host -Ixiaohong/xiaohong/src/boards/xiaohong_ws63_v1 \
+            tests/host/test_key_driver.c \
+            xiaohong/xiaohong/src/boards/xiaohong_ws63_v1/key_config.c \
+            xiaohong/xiaohong/src/boards/xiaohong_ws63_v1/volume_chord.c \
+            -o /tmp/test-key-driver
+          /tmp/test-key-driver
 
   lvgl9-render:
     runs-on: ubuntu-latest
