@@ -9,6 +9,7 @@ on:
       - "xiaohong/xiaohong/src/main.c"
       - "xiaohong/xiaohong/BUILD.gn"
       - "scripts/check_app_hub_visual.py"
+      - "tests/host/**"
       - ".github/workflows/app-hub-visual.yml"
 jobs:
   source-checks:
@@ -17,5 +18,15 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
-      - name: Verify single-focus layout and lifecycle
+      - name: Verify UI layout invariants
         run: python3 scripts/check_app_hub_visual.py
+      - name: Compile native App Hub C tests
+        run: |
+          cc -std=c11 -Wall -Wextra -Werror -pedantic \
+            -Itests/host -Ixiaohong/xiaohong/src/apps \
+            tests/host/test_app_hub.c \
+            xiaohong/xiaohong/src/apps/app_hub.c \
+            xiaohong/xiaohong/src/apps/app_hub_icons.c \
+            -o /tmp/xiaohong-app-hub-host-test
+      - name: Run key and screen lifecycle tests
+        run: /tmp/xiaohong-app-hub-host-test
