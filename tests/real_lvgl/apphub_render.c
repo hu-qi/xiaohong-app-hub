@@ -82,6 +82,7 @@ int main(int argc,char **argv) {
     const xh_app_entry_t *registry=xh_app_registry_get_all(&count);
     assert(count==5 && registry[0].system_app);
     for(unsigned id=0;id<count;id++) {
+        fprintf(stderr,"[LVGL] app id=%u before icon render\n",id);
         if(id>0)xh_app_hub_handle_key(eKey_VolDw_ShortPressed);
         lv_obj_update_layout(lv_scr_act());lv_refr_now(display);
         assert(icon_colors()>=2 && "Icon must render above tile, not be blank");
@@ -89,7 +90,9 @@ int main(int argc,char **argv) {
         if(id==0)continue; /* AI Assistant is a resident screen, not a game. */
 
         lv_obj_t *hub=lv_scr_act();
+        fprintf(stderr,"[LVGL] app id=%u before create\n",id);
         xh_app_hub_handle_key(eKey_Wakeup_ShortPressed);
+        fprintf(stderr,"[LVGL] app id=%u created\n",id);
         assert(lv_scr_act()!=hub && "every game in registry must start");
         /* Each game starts/rotates with M and moves using +/-.
          * No 240px framebuffer inside firmware; this is native host LVGL. */
@@ -101,7 +104,9 @@ int main(int argc,char **argv) {
             if(tick%30==0)lv_refr_now(display);
         }
         lv_obj_update_layout(lv_scr_act());lv_refr_now(display);
+        fprintf(stderr,"[LVGL] app id=%u after 360 ticks\n",id);
         xh_app_hub_handle_key(eKey_Wakeup_LongPressed);
+        fprintf(stderr,"[LVGL] app id=%u exited\n",id);
         assert(lv_scr_act()==hub && xh_app_hub_is_active());
     }
     xh_app_hub_handle_key(eKey_VolDw_ShortPressed); /* wrap Duck -> AI */
