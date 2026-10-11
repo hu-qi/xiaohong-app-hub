@@ -24,7 +24,7 @@ The reference image includes compact Chinese labels and a snake icon. Current co
 
 ### Input and regression
 
-- VolUp short: previous; VolDown short: next; Wakeup/M short: enter; Wakeup/M long: return.
+- VolUp (+) short: **next**; VolDown (-) short: **previous**; Wakeup/M short: enter; Wakeup/M long: return.
 - **App Hub entry:** press + and - together, hold both for at least 1000ms of overlap, and release either key. The event is emitted once. Long + alone increases brightness; long - alone decreases brightness (500ms threshold). The same chord toggles back to AI; M long still returns from games.
 - The combo is recognized by the GPIO key driver and forwarded via MainTask into LvglTask; no LVGL operation is done inside the interrupt callback.
 - Native CI verifies the chord handler and the actual first-generation key driver under simulated GPIO interrupts. Hardware debouncing and timing require WS63 verification.
