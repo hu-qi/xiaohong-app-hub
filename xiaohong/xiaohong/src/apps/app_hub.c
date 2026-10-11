@@ -254,6 +254,13 @@ void xh_app_hub_open(void)
     s_selected = 0;
     s_hub_state = XH_HUB_STATE_LIST;
     hub_create_ui();
+    if (s_hub_screen == NULL) {
+        /* OOM: never trap input in a Hub that failed to allocate its screen. */
+        s_hub_state = XH_HUB_STATE_HIDDEN;
+        s_orig_screen = NULL;
+        log_error("[AppHub] no memory for App Hub screen\r\n");
+        return;
+    }
     log_info("[AppHub] opened\r\n");
 }
 
