@@ -17,7 +17,5 @@ xiaohong/src/apps/liquid_duck/liquid_duck.c
 xiaohong/src/apps/liquid_duck/liquid_duck.h
 xiaohong/src/boards/xiaohong_ws63_v1/key_config.c
 xiaohong/src/boards/xiaohong_ws63_v1/key_config.h
-xiaohong/src/boards/xiaohong_ws63_v1/volume_chord.c
-xiaohong/src/boards/xiaohong_ws63_v1/volume_chord.h
 xiaohong/src/display/lvgl_task.c
 xiaohong/src/display/disp_driver.h
