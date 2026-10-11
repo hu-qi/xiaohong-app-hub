@@ -376,21 +376,18 @@ bool xh_app_hub_handle_key(uint8_t key_event)
         /* 应用列表模式 */
         switch (key_event) {
             case eKey_VolUp_ShortPressed:
-                /* 向上选择 */
-                if (s_selected > 0) {
-                    s_selected--;
-                } else {
-                    s_selected = s_app_count - 1;
-                }
+                /* Physical + : next application, matching the 240px footer. */
+                if (s_app_count == 0) return true;
+                s_selected++;
+                if (s_selected >= (int8_t)s_app_count) s_selected = 0;
                 hub_update_selection();
                 return true;
 
             case eKey_VolDw_ShortPressed:
-                /* 向下选择 */
-                s_selected++;
-                if (s_selected >= (int8_t)s_app_count) {
-                    s_selected = 0;
-                }
+                /* Physical - : previous application. */
+                if (s_app_count == 0) return true;
+                if (s_selected > 0) s_selected--;
+                else s_selected = (int8_t)(s_app_count - 1);
                 hub_update_selection();
                 return true;
 
