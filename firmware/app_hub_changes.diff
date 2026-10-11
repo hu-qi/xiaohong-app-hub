@@ -1,0 +1,183 @@
+diff --git a/xiaohong/xiaohong/BUILD.gn b/xiaohong/xiaohong/BUILD.gn
+index 7110a83..6cc9206 100644
+--- a/xiaohong/xiaohong/BUILD.gn
++++ b/xiaohong/xiaohong/BUILD.gn
+@@ -31,7 +31,7 @@ static_library("xiaohong") {
+     "src/settings.c",
+   ]
+   defines = [
+-    "FW_VERSION=0x020100",    # 固件版本: 0x010203 = 1.2.3
++    "FW_VERSION=0x020200",    # 固件版本: 0x010203 = 1.2.3
+     "SUPPORT_DELETE_FONT=0",  # 是否支持在配网页面操作删除已有字库
+   ]
+   if (config_ohos_enable) {
+@@ -111,6 +111,24 @@ static_library("xiaohong") {
+       "src/display/lvgl",
+       "${ws63_sdk_path}/open_source/lvgl",
+     ]
++
++    # app hub and games
++    sources += [
++      "src/apps/app_hub.c",
++      "src/apps/app_registry.c",
++      "src/apps/app_installer.c",
++      "src/apps/snake/snake_game.c",
++      "src/apps/tetris/tetris_game.c",
++      "src/apps/breakout/breakout_game.c",
++      "src/apps/liquid_duck/liquid_duck.c",
++    ]
++    include_dirs += [
++      "src/apps",
++      "src/apps/snake",
++      "src/apps/tetris",
++      "src/apps/breakout",
++      "src/apps/liquid_duck",
++    ]
+   }
+ 
+   # network
+diff --git a/xiaohong/xiaohong/src/display/disp_driver.h b/xiaohong/xiaohong/src/display/disp_driver.h
+index cacf18f..c15ad6c 100644
+--- a/xiaohong/xiaohong/src/display/disp_driver.h
++++ b/xiaohong/xiaohong/src/display/disp_driver.h
+@@ -81,6 +81,12 @@ enum {
+ 
+     // debug use only
+     eDisp_Debug_Font_Delete,
++
++    // app hub events
++    eDisp_AppHub_Open,
++    eDisp_AppHub_Close,
++    eDisp_AppHub_Tick,
++    eDisp_AppHub_KeyBase,    /* + eKey_VolUp_ShortPressed(0) .. eKey_Wakeup_LongPressed_5S(5) */
+     eDisp_Max,
+ };
+ 
+diff --git a/xiaohong/xiaohong/src/display/lvgl_task.c b/xiaohong/xiaohong/src/display/lvgl_task.c
+index d71146b..f9fd75d 100644
+--- a/xiaohong/xiaohong/src/display/lvgl_task.c
++++ b/xiaohong/xiaohong/src/display/lvgl_task.c
+@@ -33,6 +33,7 @@ SOFTWARE.
+ #include "agent_state.h"
+ #include "lvgl.h"
+ #include "lvgl_ui_layout.h"
++#include "app_hub.h"
+ #include "ota_fw_upgrade.h"
+ /* lvgl_ui_layout.h：LV_FONT_DECLARE 与 ui_text_area_config 主文本默认字体一致 */
+ #if defined(SUPPORT_LFS)
+@@ -126,6 +127,12 @@ void disp_flush_cb(lv_display_t *disp_drv, const lv_area_t *area, uint8_t *px_ma
+     lv_display_flush_ready(disp_drv);
+ }
+ 
++static void xh_app_hub_tick_timer_cb(lv_timer_t *t)
++{
++    (void)t;
++    xh_app_hub_tick();
++}
++
+ void LvglTask(void)
+ {
+     osStatus_t ret = osError;
+@@ -145,6 +152,10 @@ void LvglTask(void)
+ 
+     ui_common_text_style_config();
+     disp_create_ui();
++    xh_app_hub_init();
++
++    /* App Hub tick timer — 每 100ms 调用 xh_app_hub_tick() */
++    lv_timer_create(xh_app_hub_tick_timer_cb, 100, NULL);
+ 
+     disp_clear(WHITE);
+     set_blk_level(get_blk_level());
+@@ -377,6 +388,12 @@ void disp_update_ui(uint8_t cmd)
+         // eDisp_Bar_Update,     // 状态栏, 一直存在，只是内容更新，与UI布局无关
+     }
+ 
++    /* App Hub key event routing — 从 MainTask 转发过来的按键 */
++    if (cmd >= eDisp_AppHub_KeyBase) {
++        xh_app_hub_handle_key(cmd - eDisp_AppHub_KeyBase);
++        return;
++    }
++
+     switch (cmd) {
+         case eDisp_Blk_On:
+             set_blk_level(get_blk_level());
+@@ -619,6 +636,16 @@ void disp_update_ui(uint8_t cmd)
+             lv_label_set_text(full_txt, "\n固件升级失败\n请检查网络后重试\n或重启设备");
+             break;
+         }
++        case eDisp_AppHub_Open:
++            xh_app_hub_open();
++            break;
++        case eDisp_AppHub_Close:
++            xh_app_hub_close();
++            break;
++        case eDisp_AppHub_Tick:
++            xh_app_hub_tick();
++            break;
++
+         case eDisp_Debug_Font_Delete:
+             lv_label_set_text(full_txt, "\n字库已删除\n联网后会重新下载");
+             break;
+diff --git a/xiaohong/xiaohong/src/main.c b/xiaohong/xiaohong/src/main.c
+index ec357f4..f846349 100644
+--- a/xiaohong/xiaohong/src/main.c
++++ b/xiaohong/xiaohong/src/main.c
+@@ -35,6 +35,9 @@ SOFTWARE.
+ #include "net_wifi_config.h"
+ #include "protocol.h"
+ #include "agent_state.h"
++#if defined(SUPPORT_LVGL)
++#include "app_hub.h"
++#endif
+ #include "ota.h"
+ #include "ota_fw_upgrade.h"
+ #include "font_download.h"
+@@ -146,6 +149,13 @@ void MainTask(void)
+         }
+ 
+         log_debug("[MainTask] osMessageQueueGet: msg[%d]\r\n", msg_recv);
++        /* App Hub active: route all key events to display queue for LVGL processing */
++        if (msg_recv < eKey_MaxCount && xh_app_hub_is_active()) {
++            msg_send = eDisp_AppHub_KeyBase + msg_recv;
++            osMessageQueuePut(g_disp_event_qid, (const void *) &msg_send, 0, 0);
++            continue;
++        }
++
+         switch(msg_recv) {
+             case eKey_VolUp_ShortPressed: {
+                 if (get_wifi_status() == eWifi_St_ReConfiguring) {
+@@ -190,7 +200,13 @@ void MainTask(void)
+                 break;
+             }
+             case eKey_VolDw_LongPressed: {
++                #if defined(SUPPORT_LVGL)
++                /* VolDw long press: open App Hub (replaces brightness decrease) */
++                msg_send = eDisp_AppHub_Open;
++                osMessageQueuePut(g_disp_event_qid, (const void *) &msg_send, 0, 0);
++                #else
+                 decrease_blk_level();
++                #endif
+                 break;
+             }
+             case eKey_Wakeup_ShortPressed: {
+diff --git a/xiaohong/xiaohong/src/settings.c b/xiaohong/xiaohong/src/settings.c
+index 6de0832..f92ded8 100644
+--- a/xiaohong/xiaohong/src/settings.c
++++ b/xiaohong/xiaohong/src/settings.c
+@@ -721,6 +721,9 @@ static char *obsoleted_ota_addr_list[] =
+     "http://xiaohong-ota.yunxin360.com",  // ":8002/xiaohong/ota/",
+     "http://xhong-ota.yunxin360.com",     // "/xiaohong/ota/",
+     "http://xh-ota.atomgit.com",          // "/xiaohong/ota/",
++    "https://xiaohong-ota.yunxin360.com", // https variant
++    "https://xhong-ota.yunxin360.com",    // https variant
++    "https://xh-ota.atomgit.com",         // https variant (old path)
+ };
+ static uint8_t obsoleted_ota_addr_list_len = sizeof(obsoleted_ota_addr_list) / sizeof(obsoleted_ota_addr_list[0]);
+ 
+ xiaohong/xiaohong/BUILD.gn                  | 20 +++++++++++++++++++-
+ xiaohong/xiaohong/src/display/disp_driver.h |  6 ++++++
+ xiaohong/xiaohong/src/display/lvgl_task.c   | 27 +++++++++++++++++++++++++++
+ xiaohong/xiaohong/src/main.c                | 16 ++++++++++++++++
+ xiaohong/xiaohong/src/settings.c            |  3 +++
+ 5 files changed, 71 insertions(+), 1 deletion(-)
