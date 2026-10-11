@@ -19,8 +19,8 @@ Copyright (c) 2026 Shenzhen Open Source Co-Creation Technology Co., Ltd. (AtomGi
 static const xh_app_entry_t s_app_registry[] = {
     {
         .id         = XH_APP_ID_SNAKE,
-        .name       = "贪吃蛇",
-        .icon       = LV_SYMBOL_OK,       /* 暂用内置符号，后续可换 emoji */
+        .name       = "Snake",
+        .icon       = "S",       /* 暂用内置符号，后续可换 emoji */
         .available  = true,
         .on_create  = snake_game_create,
         .on_destroy = snake_game_destroy,
@@ -29,8 +29,8 @@ static const xh_app_entry_t s_app_registry[] = {
     },
     {
         .id         = XH_APP_ID_TETRIS,
-        .name       = "俄罗斯方块",
-        .icon       = LV_SYMBOL_CLOSE,
+        .name       = "Tetris",
+        .icon       = "T",
         .available  = false,              /* 预留接口，尚未实现 */
         .on_create  = tetris_game_create,
         .on_destroy = tetris_game_destroy,
@@ -39,8 +39,8 @@ static const xh_app_entry_t s_app_registry[] = {
     },
     {
         .id         = XH_APP_ID_BREAKOUT,
-        .name       = "打砖块",
-        .icon       = LV_SYMBOL_BATTERY_2,
+        .name       = "Breakout",
+        .icon       = "B",
         .available  = false,
         .on_create  = breakout_game_create,
         .on_destroy = breakout_game_destroy,
@@ -50,7 +50,7 @@ static const xh_app_entry_t s_app_registry[] = {
     {
         .id         = XH_APP_ID_LIQUID_DUCK,
         .name       = "LiquidDuck",
-        .icon       = LV_SYMBOL_WIFI,
+        .icon       = "D",
         .available  = false,
         .on_create  = liquid_duck_create,
         .on_destroy = liquid_duck_destroy,
