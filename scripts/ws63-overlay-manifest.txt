@@ -1,0 +1,23 @@
+# PR #2 first-generation xiaohong WS63 overlay (vendor/atomgit/xiaohong)
+xiaohong/BUILD.gn
+xiaohong/src/main.c
+xiaohong/src/apps/app_hub.c
+xiaohong/src/apps/app_hub.h
+xiaohong/src/apps/app_registry.c
+xiaohong/src/apps/app_registry.h
+xiaohong/src/apps/app_installer.c
+xiaohong/src/apps/app_installer.h
+xiaohong/src/apps/snake/snake_game.c
+xiaohong/src/apps/snake/snake_game.h
+xiaohong/src/apps/tetris/tetris_game.c
+xiaohong/src/apps/tetris/tetris_game.h
+xiaohong/src/apps/breakout/breakout_game.c
+xiaohong/src/apps/breakout/breakout_game.h
+xiaohong/src/apps/liquid_duck/liquid_duck.c
+xiaohong/src/apps/liquid_duck/liquid_duck.h
+xiaohong/src/boards/xiaohong_ws63_v1/key_config.c
+xiaohong/src/boards/xiaohong_ws63_v1/key_config.h
+xiaohong/src/boards/xiaohong_ws63_v1/volume_chord.c
+xiaohong/src/boards/xiaohong_ws63_v1/volume_chord.h
+xiaohong/src/display/lvgl_task.c
+xiaohong/src/display/disp_driver.h
