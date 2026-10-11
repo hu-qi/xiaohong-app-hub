@@ -42,15 +42,18 @@ int main(void) {
     /* Short press remains volume up/down. */
     irq(KEY_VOLDW_PIN,1,1800);irq(KEY_VOLDW_PIN,0,2000);
     assert(count==3 && emitted[2]==eKey_VolDw_ShortPressed);
-    /* Dual long sends one distinct hub event and suppresses brightness. */
-    irq(KEY_VOLUP_PIN,1,2300);irq(KEY_VOLDW_PIN,1,2320);
-    irq(KEY_VOLUP_PIN,0,3350);irq(KEY_VOLDW_PIN,0,3400);
-    assert(count==4 && emitted[3]==eKey_AppHub_Toggle);
-    /* M events still emitted by independent logic. */
+    /* NEVER hold both physical volume keys on XiaoHong hardware:
+     * their simultaneous hold is reserved for an external HARDWARE RESET.
+     * This test intentionally does not simulate that destructive gesture. */
+    irq(KEY_VOLUP_PIN,1,2300);irq(KEY_VOLUP_PIN,0,2450);
+    assert(count==4 && emitted[3]==eKey_VolUp_ShortPressed);
+    /* M retains its three independent timing buckets, including Wi-Fi reset. */
     irq(KEY_WAKEUP_PIN,1,4000);irq(KEY_WAKEUP_PIN,0,4200);
     assert(count==5 && emitted[4]==eKey_Wakeup_ShortPressed);
-    irq(KEY_WAKEUP_PIN,1,5000);irq(KEY_WAKEUP_PIN,0,10200);
-    assert(count==6 && emitted[5]==eKey_Wakeup_LongPressed_5S);
-    puts("PASS: actual key driver GPIO ISR simulation, preserving brightness, M and 5s reset");
+    irq(KEY_WAKEUP_PIN,1,5000);irq(KEY_WAKEUP_PIN,0,5700);
+    assert(count==6 && emitted[5]==eKey_Wakeup_LongPressed);
+    irq(KEY_WAKEUP_PIN,1,6000);irq(KEY_WAKEUP_PIN,0,11300);
+    assert(count==7 && emitted[6]==eKey_Wakeup_LongPressed_5S);
+    puts("PASS: actual WS63 GPIO driver: individual brightness, M short/long/5s; hardware +/- reset reserved");
     return 0;
 }
