@@ -94,8 +94,11 @@ jobs:
           mkdir -p artifacts
           /tmp/xiaohong-lvgl-render artifacts/apphub-240x240.ppm
           python3 scripts/ppm_to_png.py artifacts/apphub-240x240.ppm artifacts/apphub-240x240.png
+          for ppm in artifacts/icon-*.ppm artifacts/game-*.ppm; do
+            python3 scripts/ppm_to_png.py "$ppm" "${ppm%.ppm}.png"
+          done
       - uses: actions/upload-artifact@v4
         with:
           name: apphub-lvgl9-240x240
-          path: artifacts/apphub-240x240.png
+          path: artifacts/*.png
           retention-days: 7
