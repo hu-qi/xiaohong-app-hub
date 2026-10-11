@@ -1,63 +1,33 @@
-# XiaoHong App Hub Firmware v2.2.0 - 烧录和测试指南
+# 第一代小鸿 WS63：固件与硬件按键安全说明
 
-## 更新内容 (v2.2.0 - 2026-10-11)
+> **重要：Vol+ 与 Vol- 同时按住是小鸿硬件复位操作。禁止把这组按键定义为应用大厅入口。**
+> 本文替换了旧版 v2.2.0 指南中已过时的按键与烧录说明。
 
-1. **App Hub 作为默认启动界面** — 系统启动后自动显示应用大厅，不再是语音交互界面
-2. **左右水平切换应用** — 应用图标横向排列，Vol+左移，Vol-右移（参考应用大厅.png）
-3. **语音作为应用** — Voice 作为 App Hub 中的第一个应用，选中后进入 AI 对话
-4. **贪吃蛇相对转向** — Vol+左转，Vol-右转，Wakeup暂停/重开/退出
-5. **纯英文界面** — 避免中文字体缺失问题
-6. **OTA 地址重定向** — 增强旧地址自动重定向到新地址
+## 当前软件状态
 
-## 应用列表 (左右排列)
+- 首次无 Wi-Fi 配置：沿用原有配网流程。
+- 已配网：系统仍以 AI Assistant 为默认界面。
+- App Hub：保留五个内置应用入口：AI Assistant、Snake、Tetris、Breakout、LiquidDuck；游戏源码已有主机端 LVGL 验证，但实际 WS63 整机测试仍要逐项验收。
+- **应用大厅的物理进入手势目前未确定**。此前通过双键长按进入大厅的设计已撤销。保留 `eDisp_AppHub_Open` 明确显示任务事件，供后续已验证的安全入口调用。
+- 单独 Vol+ / Vol- 短按：原有音量功能（进入游戏后作为左右游戏键）。
+- 单独 Vol+ / Vol- 长按：原有屏幕亮度调节。
+- M 短按/长按：沿用原 AI/游戏语义；M 长按约 5 秒继续保留原有 Wi-Fi 重配流程。
+- **千万不要通过实机长按 Vol+ 和 Vol- 来测试软件切屏**，该动作会触发硬件复位，不经过应用层处理。
 
-| 顺序 | 名称 | 图标 | 状态 | 说明 |
-|------|------|------|------|------|
-| 1 | Voice | * | 可用 | AI 语音交互 |
-| 2 | Snake | > | 可用 | 贪吃蛇游戏 |
-| 3 | Tetris | x | 即将上线 | 俄罗斯方块 |
-| 4 | Breakout | ~ | 即将上线 | 打砖块 |
-| 5 | LiquidDuck | o | 即将上线 | 液体鸭子 |
+## 固件构建与验证
 
-## 按键操作
+仓库 `firmware/*.fwpkg` 中的既有二进制文件，不应视为本次安全修复版本。**合并源码不会修改设备已烧录的固件。**
 
-### App Hub 界面
-- **Vol+ 短按**: 向左切换应用
-- **Vol- 短按**: 向右切换应用
-- **Wakeup 短按**: 启动选中的应用
-- **Wakeup 长按 / Vol- 长按**: 退出 App Hub（回到 AI 对话）
+在独立且配置完整的 OpenHarmony 6.1 / WS63 构建环境中，从对应 Git 提交重新编译，并保留构建日志、源码 SHA、固件 SHA256。仓库脚本支持只读核对、备份后同步、编译留证：
 
-### 贪吃蛇游戏
-- **Vol+ 短按**: 左转（逆时针）
-- **Vol- 短按**: 右转（顺时针）
-- **Wakeup 短按**: 暂停/继续/重新开始
-- **Wakeup 长按**: 退出游戏，回到 App Hub
+```bash
+git rev-parse HEAD
+bash scripts/ws63-build-handoff.sh --check /ABS/PATH/TO/OHOS
+# 验证实际源文件来自 xiaohong/xiaohong/xiaohong/
+bash scripts/ws63-build-handoff.sh --stage /ABS/PATH/TO/OHOS
+bash scripts/ws63-build-handoff.sh --build /ABS/PATH/TO/OHOS
+```
 
-## 烧录步骤 (Mac)
+严格核对实际构建目标为 `vendor/atomgit/xiaohong/xiaohong/BUILD.gn`，且其中未链接 `volume_chord.c`。安全修复版本应不含 `eKey_AppHub_Toggle` 或 `eDisp_AppHub_Toggle`。生成的新固件仍需在真机验证亮度、音量、M 5 秒配网、配网/AI/音频及四款游戏。
 
-1. 下载 `firmware/modified_all.fwpkg`（完整固件，含 NV）
-   或 `firmware/modified_load_only.fwpkg`（仅固件，保留现有 NV）
-
-2. 使用 HiSpark 烧录工具烧录：
-   - 芯片: WS63
-   - 串口: 选择对应串口
-   - 固件: 选择下载的 .fwpkg 文件
-   - 点击"烧录"按钮
-
-3. 烧录完成后设备会自动重启
-
-## 测试步骤
-
-1. **开机验证**: 设备启动后应直接显示 "App Hub" 界面（不再显示语音交互）
-2. **左右切换**: 按 Vol+ / Vol- 在应用之间左右切换，选中项有橙色高亮
-3. **启动贪吃蛇**: 切换到 "Snake"，按 Wakeup 短按启动
-4. **游戏操作**: Vol+ 左转，Vol- 右转，Wakeup 暂停
-5. **退出游戏**: Wakeup 长按退回 App Hub
-6. **进入语音**: 切换到 "Voice"，按 Wakeup 进入 AI 对话
-7. **返回 App Hub**: 在 AI 对话界面，Vol- 长按重新打开 App Hub
-
-## 固件版本
-
-- FW_VERSION: 0x020200 (v2.2.0)
-- 编译时间: 2026-10-11
-- 基线版本: 官方原版 4676cb7
+**禁止直接拿旧固件作验收，也不要因为 GitHub CI 通过就推定已经完成 WS63 烧录。**
