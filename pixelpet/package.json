@@ -1,0 +1,12 @@
+{
+  "name": "@xiaohong/pixelpet-bridge",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "node bridge/server.mjs",
+    "test": "node --test test/*.test.mjs",
+    "check": "node --check bridge/server.mjs && node --check bridge/core.mjs && node --check hooks/pixelpet-status.js"
+  }
+}
