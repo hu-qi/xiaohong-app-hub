@@ -21,6 +21,21 @@ static uint8_t s_app_count = 0;
 static const xh_app_entry_t *s_apps = NULL;
 static const xh_app_entry_t *s_running_app = NULL;
 
+/* The default system application is the pre-existing AI screen, managed by
+ * MainTask/LvglTask; the App Hub only switches focus, not AI task ownership. */
+static int8_t hub_default_index(void)
+{
+    if (s_apps != NULL) {
+        for (uint8_t i = 0; i < s_app_count; i++) {
+            if (s_apps[i].available && s_apps[i].system_app &&
+                s_apps[i].default_app) {
+                return (int8_t)i;
+            }
+        }
+    }
+    return 0;
+}
+
 /* ===== 1.54-inch TFT / 240 x 240 LVGL UI =====
  * Reference layout is measured in physical SCREEN PIXELS (not desktop CSS).
  * Screen: #0B1424; tile: #19453E; primary action: #315ECA.
@@ -73,8 +88,12 @@ static void hub_update_selection(void)
     lv_label_set_text_fmt(s_counter, "%u / %u",
                           (unsigned)(s_selected + 1U), (unsigned)s_app_count);
     lv_label_set_text(s_app_name, app->name ? app->name : "Unknown");
-    lv_label_set_text(s_state_label, built_in ? "Installed" : "Coming soon");
-    lv_label_set_text(s_action_caption, built_in ? "M  Start" : "M  Soon");
+    lv_label_set_text(s_state_label,
+                      app->system_app ? "System" :
+                      built_in ? "Installed" : "Coming soon");
+    lv_label_set_text(s_action_caption,
+                      app->system_app ? "M  Open" :
+                      built_in ? "M  Start" : "M  Soon");
 
     lv_obj_set_style_bg_color(
         s_tile, built_in ? lv_color_make(25, 69, 62)
@@ -86,6 +105,7 @@ static void hub_update_selection(void)
         lv_obj_add_flag(s_snake_image, LV_OBJ_FLAG_HIDDEN);
         lv_obj_remove_flag(s_fallback_icon, LV_OBJ_FLAG_HIDDEN);
         lv_label_set_text(s_fallback_icon,
+                          app->id == XH_APP_ID_ASSISTANT ? "AI" :
                           app->id == XH_APP_ID_TETRIS ? "T" :
                           app->id == XH_APP_ID_BREAKOUT ? "B" : "D");
     }
@@ -237,7 +257,7 @@ static void hub_exit_app(void)
 void xh_app_hub_init(void)
 {
     s_apps = xh_app_registry_get_all(&s_app_count);
-    s_selected = 0;
+    s_selected = hub_default_index();
     s_hub_state = XH_HUB_STATE_HIDDEN;
     log_info("[AppHub] init: %u apps registered\r\n", s_app_count);
 
@@ -251,7 +271,7 @@ void xh_app_hub_open(void)
         return;
     }
 
-    s_selected = 0;
+    s_selected = hub_default_index();
     s_hub_state = XH_HUB_STATE_LIST;
     hub_create_ui();
     if (s_hub_screen == NULL) {
@@ -319,7 +339,12 @@ bool xh_app_hub_handle_key(uint8_t key_event)
                 /* 启动选中应用 */
                 if (s_selected >= 0 && s_selected < (int8_t)s_app_count) {
                     const xh_app_entry_t *app = &s_apps[s_selected];
-                    if (app->available) {
+                    if (app->system_app &&
+                        app->id == XH_APP_ID_ASSISTANT) {
+                        /* Restore the existing AI UI. Keep audio/agent running.
+                         * Provisioning and assistant startup remain in MainTask. */
+                        xh_app_hub_close();
+                    } else if (app->available) {
                         hub_launch_app(app);
                     } else {
                         log_info("[AppHub] app not available: %s\r\n", app->name);
