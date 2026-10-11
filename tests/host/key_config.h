@@ -9,7 +9,6 @@ enum {
  eKey_Wakeup_ShortPressed,
  eKey_Wakeup_LongPressed,
  eKey_Wakeup_LongPressed_5S,
- eKey_AppHub_Toggle,
  eKey_MaxCount
 };
 uint32_t key_init(void);
