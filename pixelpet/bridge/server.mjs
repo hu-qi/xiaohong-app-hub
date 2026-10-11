@@ -5,6 +5,7 @@
  * Do not expose directly to the public Internet or untrusted Wi-Fi.
  */
 import http from "node:http";
+import { readFileSync } from "node:fs";
 import net from "node:net";
 import { pathToFileURL } from "node:url";
 import { timingSafeEqual } from "node:crypto";
@@ -12,6 +13,7 @@ import { createStateStore } from "./core.mjs";
 
 export const DEFAULT_PORT = 17373;
 export const MAX_BODY_BYTES = 512;
+const previewHtml = readFileSync(new URL("../preview/index.html", import.meta.url), "utf8");
 
 function safeEqual(actual, expected) {
   if (typeof actual !== "string" || typeof expected !== "string") return false;
@@ -67,6 +69,17 @@ export function createBridge({
       const route = req.url;
       const method = req.method;
       const remote = req.socket.remoteAddress || "";
+      if (method === "GET" && route === "/preview") {
+        // HTML preview is only reachable by the developer's local browser.
+        if (!isLoopback(remote)) return jsonResponse(res, 403, { error: "forbidden" });
+        res.writeHead(200, {
+          "Content-Type": "text/html; charset=utf-8",
+          "Cache-Control": "no-store",
+          "X-Content-Type-Options": "nosniff",
+          "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'"
+        });
+        return res.end(previewHtml);
+      }
       if (method === "GET" && route === "/healthz") {
         if (!isLoopback(remote)) return jsonResponse(res, 403, { error: "forbidden" });
         return jsonResponse(res, 200, { ok: true });
