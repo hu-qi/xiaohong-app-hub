@@ -73,6 +73,8 @@ typedef struct {
     const char *name;          /* 显示名称（UTF-8） */
     const char *icon;          /* 图标符号（LV_SYMBOL 或 emoji） */
     bool available;            /* 是否已实现（false = 占位/敬请期待） */
+    bool system_app;           /* resident OS app, cannot be uninstalled */
+    bool default_app;          /* startup AI frontend, not new agent task */
 
     /*
      * on_create: 创建应用 UI，传入父容器（app_hub 提供的 lv_obj_t）
