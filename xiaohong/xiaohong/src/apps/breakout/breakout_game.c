@@ -111,7 +111,7 @@ void breakout_game_on_key(uint8_t key) {
 void breakout_game_on_tick(void) {
     if(state!=B_PLAY)return;
     /* A 100ms LVGL tick => a 200ms physics frame, affordable on WS63. */
-    if(++tick_count<1U)return;
+    if(++tick_count<2U)return;
     tick_count=0;
     int16_t nx=(int16_t)(bx+dx),ny=(int16_t)(by+dy);
     if(nx<=8||nx>=231) {dx=(int8_t)-dx;nx=(int16_t)(bx+dx);}
