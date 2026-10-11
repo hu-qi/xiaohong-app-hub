@@ -1,114 +1,63 @@
-# XiaoHong App Hub v1.0 — Mac 烧录和测试指南
+# XiaoHong App Hub Firmware v2.2.0 - 烧录和测试指南
 
-## 固件文件说明
+## 更新内容 (v2.2.0 - 2026-10-11)
 
-| 文件 | 大小 | 说明 |
-|------|------|------|
-| `baseline_all.fwpkg` | 1.89MB | 官方原版固件（不含 App Hub） |
-| `modified_all.fwpkg` | 1.90MB | App Hub 修改版固件（含贪吃蛇游戏） |
-| `baseline_load_only.fwpkg` | 1.77MB | 官方原版 load-only 模式 |
-| `modified_load_only.fwpkg` | 1.78MB | App Hub 修改版 load-only 模式 |
+1. **App Hub 作为默认启动界面** — 系统启动后自动显示应用大厅，不再是语音交互界面
+2. **左右水平切换应用** — 应用图标横向排列，Vol+左移，Vol-右移（参考应用大厅.png）
+3. **语音作为应用** — Voice 作为 App Hub 中的第一个应用，选中后进入 AI 对话
+4. **贪吃蛇相对转向** — Vol+左转，Vol-右转，Wakeup暂停/重开/退出
+5. **纯英文界面** — 避免中文字体缺失问题
+6. **OTA 地址重定向** — 增强旧地址自动重定向到新地址
 
-## Mac 烧录步骤
+## 应用列表 (左右排列)
 
-### 1. 安装 ws63flash 工具
+| 顺序 | 名称 | 图标 | 状态 | 说明 |
+|------|------|------|------|------|
+| 1 | Voice | * | 可用 | AI 语音交互 |
+| 2 | Snake | > | 可用 | 贪吃蛇游戏 |
+| 3 | Tetris | x | 即将上线 | 俄罗斯方块 |
+| 4 | Breakout | ~ | 即将上线 | 打砖块 |
+| 5 | LiquidDuck | o | 即将上线 | 液体鸭子 |
 
-```bash
-# 从 GitCode 克隆
-git clone https://gitcode.com/xiaohong-ai/ws63flash.git
-cd ws63flash
-# 按照仓库 README 安装依赖
-```
+## 按键操作
 
-### 2. 连接设备
+### App Hub 界面
+- **Vol+ 短按**: 向左切换应用
+- **Vol- 短按**: 向右切换应用
+- **Wakeup 短按**: 启动选中的应用
+- **Wakeup 长按 / Vol- 长按**: 退出 App Hub（回到 AI 对话）
 
-- 用 USB 线连接 XiaoHong 设备到 Mac
-- 确认设备被识别（`ls /dev/tty.usb*` 应能看到串口设备）
+### 贪吃蛇游戏
+- **Vol+ 短按**: 左转（逆时针）
+- **Vol- 短按**: 右转（顺时针）
+- **Wakeup 短按**: 暂停/继续/重新开始
+- **Wakeup 长按**: 退出游戏，回到 App Hub
 
-### 3. 烧录固件
+## 烧录步骤 (Mac)
 
-```bash
-# 烧录 App Hub 修改版固件（推荐）
-ws63flash firmware/modified_all.fwpkg
+1. 下载 `firmware/modified_all.fwpkg`（完整固件，含 NV）
+   或 `firmware/modified_load_only.fwpkg`（仅固件，保留现有 NV）
 
-# 或烧录官方原版固件（对比测试）
-ws63flash firmware/baseline_all.fwpkg
-```
+2. 使用 HiSpark 烧录工具烧录：
+   - 芯片: WS63
+   - 串口: 选择对应串口
+   - 固件: 选择下载的 .fwpkg 文件
+   - 点击"烧录"按钮
 
-### 4. 验证烧录成功
+3. 烧录完成后设备会自动重启
 
-- 设备重启后，LCD 屏幕应显示主界面
-- 修改版固件：主界面应包含 AI 对话等原有功能
+## 测试步骤
 
-## App Hub 使用方法
+1. **开机验证**: 设备启动后应直接显示 "App Hub" 界面（不再显示语音交互）
+2. **左右切换**: 按 Vol+ / Vol- 在应用之间左右切换，选中项有橙色高亮
+3. **启动贪吃蛇**: 切换到 "Snake"，按 Wakeup 短按启动
+4. **游戏操作**: Vol+ 左转，Vol- 右转，Wakeup 暂停
+5. **退出游戏**: Wakeup 长按退回 App Hub
+6. **进入语音**: 切换到 "Voice"，按 Wakeup 进入 AI 对话
+7. **返回 App Hub**: 在 AI 对话界面，Vol- 长按重新打开 App Hub
 
-### 打开应用大厅
+## 固件版本
 
-- **长按 VolDw（音量减键）** → 打开应用大厅
-
-### 应用大厅界面
-
-- 屏幕显示"应用大厅"标题
-- 列表显示已注册的应用（贪吃蛇、Tetris、Breakout、LiquidDuck）
-- 底部提示："Vol+/-选择 Wakeup确认"
-
-### 选择和启动应用
-
-- **Vol+ / Vol-** → 上下移动选择
-- **Wakeup 短按** → 确认/启动选中的应用
-- **Wakeup 长按** → 退出应用大厅
-
-### 贪吃蛇游戏操作
-
-- **Vol+** → 向上移动
-- **Vol-** → 向下移动
-- **Wakeup 短按** → 确认（开始/暂停）
-- **Wakeup 长按** → 退出游戏
-
-> 注意：Tetris、Breakout、LiquidDuck 为预留接口，选择后会显示"即将推出"提示。
-
-## 对比测试
-
-### 基线测试（官方原版）
-
-1. 烧录 `baseline_all.fwpkg`
-2. 验证 AI 对话、Wi-Fi、语音等原有功能正常
-3. 长按 VolDw → 应无反应（没有 App Hub）
-
-### 修改版测试（App Hub）
-
-1. 烧录 `modified_all.fwpkg`
-2. 验证原有功能仍正常工作
-3. 长按 VolDw → 应打开应用大厅
-4. 选择"贪吃蛇" → 游戏应正常启动
-5. 玩游戏验证按键响应正常
-6. 长按 Wakeup → 退出游戏返回应用大厅
-7. 再次长按 Wakeup → 退出应用大厅返回主界面
-
-## 故障排除
-
-### 烧录失败
-
-- 确认 USB 线是数据线（不是纯充电线）
-- 尝试不同的 USB 端口
-- 检查 ws63flash 是否有权限访问串口设备
-
-### App Hub 无法打开
-
-- 确认烧录的是 `modified_all.fwpkg`（不是 baseline）
-- 长按 VolDw 至少 1 秒
-- 检查 LCD 屏幕是否正常显示
-
-### 贪吃蛇游戏卡顿
-
-- 游戏 tick 间隔为 100ms，属正常
-- 如果完全无响应，检查按键是否正常工作
-
-## 技术信息
-
-- 芯片：HiSilicon WS63（RISC-V rv32imfc）
-- 系统：OpenHarmony LiteOS-M
-- 显示：240×240 LCD (ST7789)
-- 内存：348KB SRAM
-- App Hub 内存占用：~15KB（对象网格渲染，非 Canvas）
-- 编译时间：~52 秒（8核 32GB ECS）
+- FW_VERSION: 0x020200 (v2.2.0)
+- 编译时间: 2026-10-11
+- 基线版本: 官方原版 4676cb7
