@@ -89,14 +89,14 @@ int main(void) {
         xh_app_hub_open();
         assert(xh_app_hub_is_active() && lv_scr_act()!=ai);
         assert(has_visible("AI Assistant") && has_visible("System"));
-        xh_app_hub_handle_key(eKey_VolDw_ShortPressed);
+        xh_app_hub_handle_key(eKey_VolUp_ShortPressed);
         assert(has_visible("Snake") && has_visible("Installed"));
-        xh_app_hub_handle_key(eKey_VolDw_ShortPressed);
+        xh_app_hub_handle_key(eKey_VolUp_ShortPressed);
         assert(has_visible("Tetris") && has_visible("Coming soon"));
         lv_obj_t *hub=lv_scr_act();
         xh_app_hub_handle_key(eKey_Wakeup_ShortPressed);
         assert(lv_scr_act()==hub); /* cannot launch disabled apps */
-        xh_app_hub_handle_key(eKey_VolUp_ShortPressed);
+        xh_app_hub_handle_key(eKey_VolDw_ShortPressed);
         assert(has_visible("Snake"));
         if(round==0) {
             fail_app=true;
@@ -110,7 +110,7 @@ int main(void) {
         xh_app_hub_handle_key(eKey_Wakeup_ShortPressed);
         xh_app_hub_handle_key(eKey_Wakeup_LongPressed);
         assert(lv_scr_act()==hub);
-        xh_app_hub_handle_key(eKey_VolUp_ShortPressed);
+        xh_app_hub_handle_key(eKey_VolDw_ShortPressed);
         assert(has_visible("AI Assistant"));
         xh_app_hub_handle_key(eKey_Wakeup_ShortPressed);
         assert(lv_scr_act()==ai && !xh_app_hub_is_active());
