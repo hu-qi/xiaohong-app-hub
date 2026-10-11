@@ -83,7 +83,7 @@ int main(int argc,char **argv) {
     assert(count==5 && registry[0].system_app);
     for(unsigned id=0;id<count;id++) {
         fprintf(stderr,"[LVGL] app id=%u before icon render\n",id);
-        if(id>0)xh_app_hub_handle_key(eKey_VolDw_ShortPressed);
+        if(id>0)xh_app_hub_handle_key(eKey_VolUp_ShortPressed);
         lv_obj_update_layout(lv_scr_act());lv_refr_now(display);
         assert(icon_colors()>=2 && "Icon must render above tile, not be blank");
         if(id==1)export_ppm(ppm); /* historical artifact is the Snake Hub tile */
@@ -98,8 +98,8 @@ int main(int argc,char **argv) {
          * No 240px framebuffer inside firmware; this is native host LVGL. */
         xh_app_hub_handle_key(eKey_Wakeup_ShortPressed);
         for(unsigned tick=0;tick<360;tick++) {
-            if(tick%13==0)xh_app_hub_handle_key(eKey_VolDw_ShortPressed);
-            if(tick%19==0)xh_app_hub_handle_key(eKey_VolUp_ShortPressed);
+            if(tick%13==0)xh_app_hub_handle_key(eKey_VolUp_ShortPressed);
+            if(tick%19==0)xh_app_hub_handle_key(eKey_VolDw_ShortPressed);
             xh_app_hub_tick();
             if(tick%30==0)lv_refr_now(display);
         }
@@ -109,7 +109,7 @@ int main(int argc,char **argv) {
         fprintf(stderr,"[LVGL] app id=%u exited\n",id);
         assert(lv_scr_act()==hub && xh_app_hub_is_active());
     }
-    xh_app_hub_handle_key(eKey_VolDw_ShortPressed); /* wrap Duck -> AI */
+    xh_app_hub_handle_key(eKey_VolUp_ShortPressed); /* wrap Duck -> AI */
     xh_app_hub_handle_key(eKey_Wakeup_ShortPressed);
     assert(!xh_app_hub_is_active() && lv_scr_act()==ai);
     printf("PASS: 5 native LVGL shape icons visible, 4 games launch/tick/exit, 240x240 render\n");
