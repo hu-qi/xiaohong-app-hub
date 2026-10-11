@@ -9,7 +9,7 @@
 | 首次开机，尚无 Wi-Fi 配置 | 原有 Wi-Fi 配网页面 | 不打开 App Hub；+/- 组合键在配网期被忽略 |
 | 已保存 Wi-Fi 配置，重启或开机 | 原有 AI 页面及现有联网/握手流程 | **不**自动显示 App Hub，不复制 AI Agent |
 | 配网完成后 | 沿用原实现的配网成功提示、系统重启，再进入正常 AI 流程 | 不在配网成功回调直接切换到 App Hub |
-| AI 页面，同时按住 + / - | **硬件复位** | 禁止复用为 App Hub 入口；当前等待确认安全的进入手势 |
+| AI 页面，快速双击 M（350ms 内两次短按释放） | 打开 App Hub | 不触发单击 AI 唤醒；在 MainTask 识别 |
 | App Hub 默认焦点 | `AI Assistant`（内置系统应用，1/5） | `M Open` 返回原有 AI 页面 |
 | App Hub 选择 `Snake`（2/5） | `M Start` 启动贪吃蛇 | 原有 240×240 游戏实现不变 |
 | 游戏中 M 长按 | 回到 App Hub | 下次选择 AI Assistant 即可回到 AI |
@@ -22,7 +22,8 @@
 - 默认系统应用是**现有 AI UI 的轻量入口**。它没有 `on_create` / `on_destroy`，避免重复创建 AI Agent、音频和网络任务。
 - App Hub 打开时优先选择具有 `system_app && default_app` 标记的条目。
 - 对 AI Assistant 按下 M 后，调用 `xh_app_hub_close()` 恢复原来的 AI 屏幕，而不是执行游戏式启动。
-- App Hub 仍保留显式 `eDisp_AppHub_Open` 软件事件，但当前**不绑定任何未经硬件确认的组合按键**。
+- 已采用 **M 双击** 独立进入手势，由 MainTask 判定两次短按，透过 `eDisp_AppHub_DoubleM` 投递给 LvglTask。AI 页双击打开大厅；大厅列表双击回 AI；游戏中双击回大厅列表。
+- 单次 M 短按延迟最多约 350–390ms 后执行原功能；M 500ms 长按/5000ms 配网仍由原 GPIO 事件实现。
 - `+ / -` 单独长按仍保持亮度调节；**两键同时长按是硬件复位，不可用于应用大厅**。
 
 ## 运行限制
