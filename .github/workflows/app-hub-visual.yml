@@ -83,6 +83,7 @@ jobs:
             tests/real_lvgl/apphub_render.c \
             xiaohong/xiaohong/src/apps/app_hub.c \
             xiaohong/xiaohong/src/apps/app_registry.c \
+            xiaohong/xiaohong/src/apps/snake/snake_game.c \
             xiaohong/xiaohong/src/apps/tetris/tetris_game.c \
             xiaohong/xiaohong/src/apps/breakout/breakout_game.c \
             xiaohong/xiaohong/src/apps/liquid_duck/liquid_duck.c \
