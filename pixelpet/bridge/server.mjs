@@ -134,7 +134,7 @@ export async function startBridge({
   return bridge;
 }
 
-if (process.argv[1] && import.meta.url === new URL("file://" + process.argv[1]).href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const rawPort = process.env.PIXELPET_PORT || String(DEFAULT_PORT);
   const port = Number(rawPort);
   startBridge({
