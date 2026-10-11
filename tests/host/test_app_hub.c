@@ -26,12 +26,13 @@ static void on_destroy(void) { destroyed++; }
 static void on_key(uint8_t key) { assert(key<XH_APP_KEY_MAX); key_count++; }
 static void on_tick(void) { ticks++; }
 static const xh_app_entry_t apps[] = {
+    {.id=XH_APP_ID_ASSISTANT,.name="AI Assistant",.icon="AI",.available=true,.system_app=true,.default_app=true},
     {.id=XH_APP_ID_SNAKE,.name="Snake",.icon="S",.available=true,.on_create=on_create,.on_destroy=on_destroy,.on_key=on_key,.on_tick=on_tick},
     {.id=XH_APP_ID_TETRIS,.name="Tetris",.icon="T",.available=false},
     {.id=XH_APP_ID_BREAKOUT,.name="Breakout",.icon="B",.available=false},
     {.id=XH_APP_ID_LIQUID_DUCK,.name="LiquidDuck",.icon="D",.available=false}
 };
-const xh_app_entry_t *xh_app_registry_get_all(uint8_t *count) { *count=4;return apps; }
+const xh_app_entry_t *xh_app_registry_get_all(uint8_t *count) { *count=5;return apps; }
 static unsigned install_init;
 void xh_app_installer_init(void) { install_init++; }
 static lv_obj_t *alloc_obj(lv_obj_t *parent) {
@@ -77,9 +78,18 @@ int main(void) {
     lv_obj_t *ai=lv_obj_create(NULL);lv_scr_load(ai);
     xh_app_hub_init();
     assert(install_init==1 && !xh_app_hub_is_active());
+    /* Default app uses the EXISTING AI screen; no AI clone is allocated. */
+    xh_app_hub_open();
+    assert(xh_app_hub_is_active() && has_visible("AI Assistant"));
+    assert(has_visible("System") && has_visible("M  Open"));
+    xh_app_hub_handle_key(eKey_Wakeup_ShortPressed);
+    assert(!xh_app_hub_is_active() && lv_scr_act()==ai && live==1);
+
     for(unsigned round=0;round<60;round++) {
         xh_app_hub_open();
         assert(xh_app_hub_is_active() && lv_scr_act()!=ai);
+        assert(has_visible("AI Assistant") && has_visible("System"));
+        xh_app_hub_handle_key(eKey_VolDw_ShortPressed);
         assert(has_visible("Snake") && has_visible("Installed"));
         xh_app_hub_handle_key(eKey_VolDw_ShortPressed);
         assert(has_visible("Tetris") && has_visible("Coming soon"));
@@ -100,11 +110,13 @@ int main(void) {
         xh_app_hub_handle_key(eKey_Wakeup_ShortPressed);
         xh_app_hub_handle_key(eKey_Wakeup_LongPressed);
         assert(lv_scr_act()==hub);
-        xh_app_hub_handle_key(eKey_Wakeup_LongPressed);
+        xh_app_hub_handle_key(eKey_VolUp_ShortPressed);
+        assert(has_visible("AI Assistant"));
+        xh_app_hub_handle_key(eKey_Wakeup_ShortPressed);
         assert(lv_scr_act()==ai && !xh_app_hub_is_active());
         assert(live==1);
     }
     assert(created==61 && destroyed==60 && ticks==60 && key_count==120);
-    printf("PASS: 60 full cycles, disabled app, failed launch, keys, ticks, LVGL screen lifetime\n");
+    printf("PASS: 60 full cycles, default resident AI, disabled app, failed launch, keys, ticks, LVGL screen lifetime\n");
     return 0;
 }
