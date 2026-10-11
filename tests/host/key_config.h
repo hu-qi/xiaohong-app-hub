@@ -1,5 +1,6 @@
 #ifndef XH_HOST_KEY_CONFIG_H
 #define XH_HOST_KEY_CONFIG_H
+#include "board_config.h"
 enum {
  eKey_VolUp_ShortPressed=0,
  eKey_VolUp_LongPressed,
