@@ -22,6 +22,7 @@ static void destroy_game(void) {}
 static void key_game(uint8_t key) { (void)key; }
 static void tick_game(void) {}
 static const xh_app_entry_t entries[] = {
+    {.id=XH_APP_ID_ASSISTANT,.name="AI Assistant",.icon="AI",.available=true,.system_app=true,.default_app=true},
     {.id=XH_APP_ID_SNAKE,.name="Snake",.icon="S",.available=true,.on_create=create_game,.on_destroy=destroy_game,.on_key=key_game,.on_tick=tick_game},
     {.id=XH_APP_ID_TETRIS,.name="Tetris",.icon="T",.available=false},
     {.id=XH_APP_ID_BREAKOUT,.name="Breakout",.icon="B",.available=false},
@@ -69,6 +70,7 @@ int main(int argc,char **argv) {
     xh_app_hub_init();
     xh_app_hub_open();
     assert(xh_app_hub_is_active() && ai != lv_scr_act());
+    xh_app_hub_handle_key(eKey_VolDw_ShortPressed); /* show Snake for screenshot */
     lv_obj_update_layout(lv_scr_act());
     lv_refr_now(display);
     export_ppm(ppm);
@@ -77,9 +79,10 @@ int main(int argc,char **argv) {
     xh_app_hub_handle_key(eKey_VolUp_ShortPressed);
     xh_app_hub_handle_key(eKey_Wakeup_ShortPressed);
     assert(xh_app_hub_is_active());
-    xh_app_hub_handle_key(eKey_Wakeup_LongPressed);
-    xh_app_hub_handle_key(eKey_Wakeup_LongPressed);
+    xh_app_hub_handle_key(eKey_Wakeup_LongPressed); /* game -> App Hub */
+    xh_app_hub_handle_key(eKey_VolUp_ShortPressed); /* Snake -> AI Assistant */
+    xh_app_hub_handle_key(eKey_Wakeup_ShortPressed); /* AI Assistant -> original AI */
     assert(!xh_app_hub_is_active() && lv_scr_act()==ai);
-    printf("PASS: real LVGL 9 rendered 240x240; navigation & screen roundtrip\n");
+    printf("PASS: real LVGL 9 rendered 240x240 Snake entry; resident AI navigation roundtrip\n");
     return 0;
 }
