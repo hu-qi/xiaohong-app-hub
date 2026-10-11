@@ -32,6 +32,12 @@ const allowed = { source: "codearts-cli", session: "project-secret",
 test("separate credentials and strict least-privilege endpoints", async () => {
   await withBridge(async (base) => {
     assert.equal((await fetch(base + "/healthz")).status, 200);
+    const preview = await fetch(base + "/preview");
+    assert.equal(preview.status, 200);
+    assert.match(preview.headers.get("content-security-policy"), /connect-src 'self'/);
+    const page = await preview.text();
+    assert.match(page, /<canvas width="240" height="240"/);
+    assert.match(page, /PixelPet/);
     assert.equal((await send(base, allowed, PET_TOKEN)).status, 401);
     assert.equal((await state(base, HOOK_TOKEN)).status, 401);
     assert.equal((await state(base)).status, 200);
@@ -86,4 +92,17 @@ test("missing or identical/weak tokens reject startup", () => {
   assert.throws(() => createBridge({hookToken:"short",petToken:PET_TOKEN}));
   assert.throws(() => createBridge({hookToken:PET_TOKEN,petToken:PET_TOKEN}));
   assert.throws(() => createBridge({hookToken:HOOK_TOKEN,petToken:"short"}));
+});
+
+test("LAN config cannot silently sever loopback hook ingress", async () => {
+  const { startBridge } = await import("../bridge/server.mjs");
+  await assert.rejects(
+    startBridge({
+      host: "192.168.1.20",
+      hookToken: HOOK_TOKEN,
+      petToken: PET_TOKEN,
+      port: 0
+    }),
+    /Use 0\.0\.0\.0/
+  );
 });
