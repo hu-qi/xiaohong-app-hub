@@ -86,6 +86,7 @@ enum {
     eDisp_AppHub_Open,
     eDisp_AppHub_Close,
     eDisp_AppHub_Tick,
+    eDisp_AppHub_DoubleM, /* MainTask-only second short M click; no hardware reset chord */
     eDisp_AppHub_KeyBase,    /* + eKey_VolUp_ShortPressed(0) .. eKey_Wakeup_LongPressed_5S(5) */
     eDisp_Max,
 };
