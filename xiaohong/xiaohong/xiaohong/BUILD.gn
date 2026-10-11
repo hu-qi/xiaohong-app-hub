@@ -27,6 +27,7 @@ static_library("xiaohong") {
   # main task entry and common APIs
   sources = [
     "src/main.c",
+    "src/m_double_tap.c",
     "src/task_entry.c",
     "src/settings.c",
   ]
