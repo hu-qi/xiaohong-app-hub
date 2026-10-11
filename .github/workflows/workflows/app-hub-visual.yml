@@ -1,0 +1,104 @@
+name: App Hub 240x240 source checks
+on:
+  push:
+    branches: ["feat/app-hub-visual-240x240"]
+  pull_request:
+    paths:
+      - "xiaohong/xiaohong/src/apps/**"
+      - "xiaohong/xiaohong/src/display/lvgl_task.c"
+      - "xiaohong/xiaohong/src/main.c"
+      - "xiaohong/xiaohong/BUILD.gn"
+      - "scripts/check_app_hub_visual.py"
+      - "tests/host/**"
+      - "xiaohong/xiaohong/src/boards/xiaohong_ws63_v1/key_config.*"
+      - "xiaohong/xiaohong/src/boards/xiaohong_ws63_v1/volume_chord.*"
+      - "tests/real_lvgl/**"
+      - "scripts/ppm_to_png.py"
+      - ".github/workflows/app-hub-visual.yml"
+jobs:
+  source-checks:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify UI layout invariants
+        run: python3 scripts/check_app_hub_visual.py
+      - name: Compile native App Hub C tests
+        run: |
+          cc -std=c11 -Wall -Wextra -Werror -pedantic \
+            -Itests/host -Ixiaohong/xiaohong/src/apps \
+            tests/host/test_app_hub.c \
+            xiaohong/xiaohong/src/apps/app_hub.c \
+            -o /tmp/xiaohong-app-hub-host-test
+      - name: Run key and screen lifecycle tests
+        run: /tmp/xiaohong-app-hub-host-test
+      - name: Compile and validate real system app registry
+        run: |
+          cc -std=c11 -Wall -Wextra -Werror -pedantic \
+            -Itests/host -Ixiaohong/xiaohong/src/apps \
+            tests/host/test_app_registry.c \
+            xiaohong/xiaohong/src/apps/app_registry.c \
+            -o /tmp/test-app-registry
+          /tmp/test-app-registry
+      - name: Compile and test pure two-button chord recognizer
+        run: |
+          cc -std=c11 -Wall -Wextra -Werror -pedantic \
+            -Ixiaohong/xiaohong/src/boards/xiaohong_ws63_v1 \
+            tests/host/test_volume_chord.c \
+            xiaohong/xiaohong/src/boards/xiaohong_ws63_v1/volume_chord.c \
+            -o /tmp/test-volume-chord
+          /tmp/test-volume-chord
+      - name: Compile and simulate actual board GPIO key driver
+        run: |
+          cc -std=c11 -Wall -Wextra -Werror -pedantic \
+            -Itests/host -Ixiaohong/xiaohong/src/boards/xiaohong_ws63_v1 \
+            tests/host/test_key_driver.c \
+            xiaohong/xiaohong/src/boards/xiaohong_ws63_v1/key_config.c \
+            xiaohong/xiaohong/src/boards/xiaohong_ws63_v1/volume_chord.c \
+            -o /tmp/test-key-driver
+          /tmp/test-key-driver
+
+  lvgl9-render:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download pinned upstream LVGL 9.2.2
+        run: git clone --depth 1 --branch v9.2.2 https://github.com/lvgl/lvgl.git /tmp/lvgl
+      - name: Build real LVGL renderer
+        run: |
+          cmake -S /tmp/lvgl -B /tmp/lvgl-build \
+            -DLV_CONF_SKIP=ON \
+            -DLV_CONF_BUILD_DISABLE_DEMOS=ON \
+            -DLV_CONF_BUILD_DISABLE_EXAMPLES=ON \
+            -DLV_CONF_BUILD_DISABLE_THORVG_INTERNAL=ON \
+            -DCMAKE_BUILD_TYPE=Release
+          cmake --build /tmp/lvgl-build --target lvgl -j 4
+      - name: Compile App Hub against actual LVGL 9 headers
+        run: |
+          cc -std=c11 -O2 -DLV_CONF_SKIP=1 \
+            -I/tmp/lvgl -Itests/host -Ixiaohong/xiaohong/src/apps \
+            tests/real_lvgl/apphub_render.c \
+            xiaohong/xiaohong/src/apps/app_hub.c \
+            xiaohong/xiaohong/src/apps/app_registry.c \
+            xiaohong/xiaohong/src/apps/snake/snake_game.c \
+            xiaohong/xiaohong/src/apps/tetris/tetris_game.c \
+            xiaohong/xiaohong/src/apps/breakout/breakout_game.c \
+            xiaohong/xiaohong/src/apps/liquid_duck/liquid_duck.c \
+            /tmp/lvgl-build/lib/liblvgl.a -lm -pthread \
+            -o /tmp/xiaohong-lvgl-render
+      - name: Render actual LVGL 240x240 framebuffer and smoke-test games
+        run: |
+          mkdir -p artifacts
+          /tmp/xiaohong-lvgl-render artifacts/apphub-240x240.ppm
+          python3 scripts/ppm_to_png.py artifacts/apphub-240x240.ppm artifacts/apphub-240x240.png
+          for ppm in artifacts/icon-*.ppm artifacts/game-*.ppm; do
+            python3 scripts/ppm_to_png.py "$ppm" "${ppm%.ppm}.png"
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: apphub-lvgl9-240x240
+          path: artifacts/*.png
+          retention-days: 7
