@@ -328,8 +328,7 @@ bool xh_app_hub_handle_key(uint8_t key_event)
                 return true;
 
             case eKey_Wakeup_LongPressed:
-            case eKey_VolDw_LongPressed:
-                /* 退出应用大厅 */
+                /* M long: close App Hub. Brightness keys remain system-owned. */
                 xh_app_hub_close();
                 return true;
 
