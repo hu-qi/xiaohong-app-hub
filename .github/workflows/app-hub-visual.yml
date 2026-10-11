@@ -1,0 +1,21 @@
+name: App Hub 240x240 source checks
+on:
+  push:
+    branches: ["feat/app-hub-visual-240x240"]
+  pull_request:
+    paths:
+      - "xiaohong/xiaohong/src/apps/**"
+      - "xiaohong/xiaohong/src/display/lvgl_task.c"
+      - "xiaohong/xiaohong/src/main.c"
+      - "xiaohong/xiaohong/BUILD.gn"
+      - "scripts/check_app_hub_visual.py"
+      - ".github/workflows/app-hub-visual.yml"
+jobs:
+  source-checks:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify single-focus layout and lifecycle
+        run: python3 scripts/check_app_hub_visual.py
