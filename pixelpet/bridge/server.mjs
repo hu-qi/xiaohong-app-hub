@@ -30,7 +30,7 @@ function jsonResponse(res, code, data) {
     "Content-Type": "application/json; charset=utf-8",
     "Cache-Control": "no-store",
     "X-Content-Type-Options": "nosniff",
-    "Access-Control-Allow-Origin": "null"
+    "Content-Security-Policy": "default-src 'none'"
   });
   res.end(JSON.stringify(data));
 }
