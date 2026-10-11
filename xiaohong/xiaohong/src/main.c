@@ -149,12 +149,17 @@ void MainTask(void)
         }
 
         log_debug("[MainTask] osMessageQueueGet: msg[%d]\r\n", msg_recv);
-        /* App Hub active: route all key events to display queue for LVGL processing */
-        if (msg_recv < eKey_MaxCount && xh_app_hub_is_active()) {
+        /* System-critical 5s hold must remain available even in App Hub.
+         * All other App Hub key events are sent to LvglTask (single LVGL owner). */
+        #if defined(SUPPORT_LVGL)
+        if (msg_recv < eKey_MaxCount &&
+            msg_recv != eKey_Wakeup_LongPressed_5S &&
+            xh_app_hub_is_active()) {
             msg_send = eDisp_AppHub_KeyBase + msg_recv;
             osMessageQueuePut(g_disp_event_qid, (const void *) &msg_send, 0, 0);
             continue;
         }
+        #endif
 
         switch(msg_recv) {
             case eKey_VolUp_ShortPressed: {
