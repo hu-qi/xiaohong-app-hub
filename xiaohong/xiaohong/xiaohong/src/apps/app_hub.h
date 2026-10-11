@@ -45,7 +45,9 @@ SOFTWARE.
  *   Wakeup 长按 → 返回/退出
  *
  * 进入应用大厅：
- *   同时长按 VolUp + VolDw（重叠至少 1000ms），松开任意一键 → 切换大厅
+ *   VolUp + VolDw 同时长按是设备硬件复位，严禁复用为 App Hub 入口。
+ *   当前暂不映射物理键进入大厅，直到确定无冲突的单独手势。
+ *   eDisp_AppHub_Open 保留供显示任务中的明确软件入口使用。
  *   单独长按 VolUp / VolDw 保持原有亮度调节功能
  */
 
