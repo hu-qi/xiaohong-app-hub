@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "lvgl.h"
 #include "app_hub.h"
 #include "app_registry.h"
@@ -38,6 +39,19 @@ static void export_ppm(const char *filename) {
     }
     fclose(out);
 }
+/* Keep all image outputs next to the historical Snake snapshot path. */
+static void export_named(const char *reference,const char *kind,unsigned id) {
+    char path[256];
+    const char *slash=strrchr(reference,'/');
+    if(slash) {
+        int n=(int)(slash-reference);
+        assert(n>=0 && n<160);
+        snprintf(path,sizeof(path),"%.*s/%s-%u.ppm",n,reference,kind,id);
+    } else {
+        snprintf(path,sizeof(path),"%s-%u.ppm",kind,id);
+    }
+    export_ppm(path);
+}
 static unsigned icon_colors(void) {
     /* Inner tile area has at least background + solid sprite color.
      * RGB565 is compared directly in the true upstream LVGL framebuffer. */
@@ -72,6 +86,7 @@ int main(int argc,char **argv) {
         if(id>0)xh_app_hub_handle_key(eKey_VolUp_ShortPressed);
         lv_obj_update_layout(lv_scr_act());lv_refr_now(display);
         assert(icon_colors()>=2 && "Icon must render above tile, not be blank");
+        export_named(ppm,"icon",id);
         if(id==1)export_ppm(ppm); /* historical artifact is the Snake Hub tile */
         if(id==0)continue; /* AI Assistant is a resident screen, not a game. */
 
@@ -90,6 +105,7 @@ int main(int argc,char **argv) {
             if(tick%30==0)lv_refr_now(display);
         }
         lv_obj_update_layout(lv_scr_act());lv_refr_now(display);
+        export_named(ppm,"game",id);
         fprintf(stderr,"[LVGL] app id=%u after 360 ticks\n",id);
         xh_app_hub_handle_key(eKey_Wakeup_LongPressed);
         fprintf(stderr,"[LVGL] app id=%u exited\n",id);
