@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 typedef uint32_t pin_t;
-typedef int errcode_t;
+typedef uint32_t errcode_t;
 #define ERRCODE_SUCC 0
 #define KEY_VOLUP_PIN 13
 #define KEY_VOLDW_PIN 12
