@@ -29,7 +29,8 @@
 
 - `system_app` 是应用元数据；当前 `app_installer.c` 仍是占位实现，**不存在真实的安装、卸载和权限执行器**。
 - 现有 AI 后台任务并未暂停，因此 **游戏中语音并发、音频焦点、语音设备控制**还没有完整实现。M 短按在游戏中属于游戏，不能假设也能唤醒 AI。
-- GitCode `.xhapp` 分发、CodeArts 像素宠物、受控设备指令、SOS 都不属于 PR #2 的本次变更，尚未实现。
+- GitCode `.xhapp` 分发、CodeArts 开发状态像素宠物、受控设备指令、SOS 都不属于 PR #2 的本次变更，尚未实现。
+- **PixelPet 定义纠正：** 通过局域网接收开发电脑上 CodeArts IDE/CLI Hooks 提供的 Vibe Coding 状态，以像素宠物动画显示；并非 CodeArts 聊天模型、语音宠物或通用 AI 对话应用。架构见 [PixelPet CodeArts Hook Bridge](pixelpet-codearts-hook-bridge.md)。
 - 本 PR 的主机测试与 LVGL 9.2.2 离屏渲染不等于 WS63 固件编译或实机烧录；必须验证后再合并/Release。
 
 ## 回归测试
