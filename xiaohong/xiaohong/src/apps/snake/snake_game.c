@@ -221,10 +221,10 @@ static void snake_step(void)
         }
         s_snake_len++;
         s_score += 10;
-        snake_place_food();
         snake_update_score();
         log_info("[Snake] ate food, score=%d, len=%d\r\n", s_score, s_snake_len);
 
+        /* 棋盘已满时必须停止，不能调用无限寻找空格的放食物循环。 */
         if (s_snake_len >= SNAKE_MAX_LEN) {
             s_state = SNAKE_STATE_GAME_OVER;
             s_snake[0] = new_head;
@@ -233,6 +233,7 @@ static void snake_step(void)
             log_info("[Snake] game over: max length, score=%d\r\n", s_score);
             return;
         }
+        snake_place_food();
     }
 
     /* 更新头部 */
@@ -312,25 +313,25 @@ void snake_game_destroy(void)
 void snake_game_on_key(uint8_t key_event)
 {
     switch (key_event) {
-        case XH_APP_KEY_UP:
-            if (s_direction != SNAKE_DIR_DOWN) {
-                s_next_dir = SNAKE_DIR_UP;
+        case XH_APP_KEY_UP: /* + : relative left */
+        case XH_APP_KEY_DOWN: { /* - : relative right */
+            uint8_t next = s_direction;
+            if (key_event == XH_APP_KEY_UP) {
+                if (next == SNAKE_DIR_RIGHT) next = SNAKE_DIR_UP;
+                else if (next == SNAKE_DIR_UP) next = SNAKE_DIR_LEFT;
+                else if (next == SNAKE_DIR_LEFT) next = SNAKE_DIR_DOWN;
+                else next = SNAKE_DIR_RIGHT;
+            } else {
+                if (next == SNAKE_DIR_RIGHT) next = SNAKE_DIR_DOWN;
+                else if (next == SNAKE_DIR_DOWN) next = SNAKE_DIR_LEFT;
+                else if (next == SNAKE_DIR_LEFT) next = SNAKE_DIR_UP;
+                else next = SNAKE_DIR_RIGHT;
             }
+            s_next_dir = next;
             break;
-        case XH_APP_KEY_DOWN:
-            if (s_direction != SNAKE_DIR_UP) {
-                s_next_dir = SNAKE_DIR_DOWN;
-            }
-            break;
+        }
         case XH_APP_KEY_LEFT:
-            if (s_direction != SNAKE_DIR_RIGHT) {
-                s_next_dir = SNAKE_DIR_LEFT;
-            }
-            break;
         case XH_APP_KEY_RIGHT:
-            if (s_direction != SNAKE_DIR_LEFT) {
-                s_next_dir = SNAKE_DIR_RIGHT;
-            }
             break;
         case XH_APP_KEY_CONFIRM:
             if (s_state == SNAKE_STATE_READY) {
