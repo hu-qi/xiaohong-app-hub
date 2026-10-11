@@ -1,0 +1,22 @@
+name: PixelPet CodeArts Bridge CI
+on:
+  push:
+    branches: [feat/pixelpet-codearts-lan-bridge]
+  pull_request:
+    paths:
+      - "pixelpet/**"
+      - ".github/workflows/pixelpet-bridge.yml"
+jobs:
+  node22-test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check modules
+        run: npm --prefix pixelpet run check
+      - name: Test Hook adapter, state and LAN security
+        run: npm --prefix pixelpet test
