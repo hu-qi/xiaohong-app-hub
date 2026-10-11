@@ -35,7 +35,6 @@ enum {
     eKey_Wakeup_ShortPressed,
     eKey_Wakeup_LongPressed,
     eKey_Wakeup_LongPressed_5S,
-    eKey_AppHub_Toggle, /* simultaneous +/- hold (>= 1000ms overlap) */
     eKey_MaxCount,
 };
 
