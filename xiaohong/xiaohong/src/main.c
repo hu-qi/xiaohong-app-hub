@@ -154,6 +154,9 @@ void MainTask(void)
         #if defined(SUPPORT_LVGL)
         if (msg_recv < eKey_MaxCount &&
             msg_recv != eKey_Wakeup_LongPressed_5S &&
+            msg_recv != eKey_VolUp_LongPressed &&
+            msg_recv != eKey_VolDw_LongPressed &&
+            msg_recv != eKey_AppHub_Toggle &&
             xh_app_hub_is_active()) {
             msg_send = eDisp_AppHub_KeyBase + msg_recv;
             osMessageQueuePut(g_disp_event_qid, (const void *) &msg_send, 0, 0);
@@ -205,12 +208,15 @@ void MainTask(void)
                 break;
             }
             case eKey_VolDw_LongPressed: {
-                #if defined(SUPPORT_LVGL)
-                /* VolDw long press: open App Hub (replaces brightness decrease) */
-                msg_send = eDisp_AppHub_Open;
-                osMessageQueuePut(g_disp_event_qid, (const void *) &msg_send, 0, 0);
-                #else
+                /* Preserve the stock brightness-down behavior. */
                 decrease_blk_level();
+                break;
+            }
+            case eKey_AppHub_Toggle: {
+                /* The LVGL task owns the Hub state and screen transition. */
+                #if defined(SUPPORT_LVGL)
+                msg_send = eDisp_AppHub_Toggle;
+                osMessageQueuePut(g_disp_event_qid, (const void *) &msg_send, 0, 0);
                 #endif
                 break;
             }
