@@ -34,6 +34,14 @@ jobs:
             -o /tmp/xiaohong-app-hub-host-test
       - name: Run key and screen lifecycle tests
         run: /tmp/xiaohong-app-hub-host-test
+      - name: Compile and validate real system app registry
+        run: |
+          cc -std=c11 -Wall -Wextra -Werror -pedantic \
+            -Itests/host -Ixiaohong/xiaohong/src/apps \
+            tests/host/test_app_registry.c \
+            xiaohong/xiaohong/src/apps/app_registry.c \
+            -o /tmp/test-app-registry
+          /tmp/test-app-registry
       - name: Compile and test pure two-button chord recognizer
         run: |
           cc -std=c11 -Wall -Wextra -Werror -pedantic \
