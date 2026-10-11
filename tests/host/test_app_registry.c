@@ -24,7 +24,14 @@ int main(void) {
     assert(a->on_create == NULL && a->on_destroy == NULL);
     assert(a->on_tick == NULL && a->on_key == NULL);
     assert(xh_app_registry_find_by_id(XH_APP_ID_SNAKE)->available);
-    assert(!xh_app_registry_find_by_id(XH_APP_ID_TETRIS)->available);
+    assert(xh_app_registry_find_by_id(XH_APP_ID_TETRIS)->available);
+    assert(xh_app_registry_find_by_id(XH_APP_ID_BREAKOUT)->available);
+    assert(xh_app_registry_find_by_id(XH_APP_ID_LIQUID_DUCK)->available);
+    for (uint8_t id = XH_APP_ID_SNAKE; id < XH_APP_ID_MAX; ++id) {
+        const xh_app_entry_t *app = xh_app_registry_find_by_id(id);
+        assert(app && app->available && app->on_create && app->on_destroy &&
+               app->on_key && app->on_tick);
+    }
     unsigned defaults = 0, sysapps = 0;
     for (uint8_t i = 0; i < count; ++i) {
         defaults += all[i].default_app ? 1U : 0U;
