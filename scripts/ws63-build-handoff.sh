@@ -37,9 +37,9 @@ MATCH=0
 while IFS= read -r item || [[ -n "$item" ]]; do
   [[ -z "$item" || "$item" == \#* ]] && continue
   case "$item" in /*|*..*|*//*|*[!a-zA-Z0-9_./-]*) echo "Unsafe manifest item: $item" >&2; exit 2;; esac
-  [[ -f "$BASE/xiaohong/$item" ]] || { echo "Missing source: $item" >&2; exit 2; }
+  [[ -f "$BASE/xiaohong/xiaohong/$item" ]] || { echo "Missing source: $item" >&2; exit 2; }
   FILES+=("$item")
-  if [[ -f "$VENDOR/$item" ]] && cmp -s "$BASE/xiaohong/$item" "$VENDOR/$item"; then MATCH=$((MATCH+1)); fi
+  if [[ -f "$VENDOR/$item" ]] && cmp -s "$BASE/xiaohong/xiaohong/$item" "$VENDOR/$item"; then MATCH=$((MATCH+1)); fi
 done < "$LIST"
 [[ "${#FILES[@]}" -gt 15 ]] || { echo "Incomplete overlay manifest" >&2; exit 2; }
 echo "PR SHA=$SHA; OH root=$OH; manifest files=${#FILES[@]}; matched=$MATCH"
@@ -63,7 +63,7 @@ if [[ "$MODE" == "--stage" ]]; then
   done
   for item in "${FILES[@]}"; do
     mkdir -p "$(dirname "$VENDOR/$item")"
-    cp -p "$BASE/xiaohong/$item" "$VENDOR/$item"
+    cp -p "$BASE/xiaohong/xiaohong/$item" "$VENDOR/$item"
   done
   printf '%s\n' "$SHA" > "$MARKER"
   echo "STAGED: backups at $BACKUP. No build or flashing."
@@ -73,7 +73,7 @@ fi
   echo "ERROR: first stage exactly this source commit using --stage" >&2; exit 2;
 }
 for item in "${FILES[@]}"; do
-  cmp -s "$BASE/xiaohong/$item" "$VENDOR/$item" || {
+  cmp -s "$BASE/xiaohong/xiaohong/$item" "$VENDOR/$item" || {
     echo "ERROR: source-to-SDK drift: $item" >&2; exit 2;
   }
 done
