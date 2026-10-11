@@ -20,20 +20,66 @@ static uint8_t s_app_count = 0;
 static const xh_app_entry_t *s_apps = NULL;
 static const xh_app_entry_t *s_running_app = NULL;
 
-/* ===== LVGL 对象 ===== */
-static lv_obj_t *s_hub_screen = NULL;    /* 应用大厅独立屏幕 */
-static lv_obj_t *s_hub_title  = NULL;    /* 标题 "应用大厅" */
-static lv_obj_t *s_hub_list   = NULL;    /* 列表容器 */
-static lv_obj_t *s_hub_items[8] = {NULL}; /* 列表项（最多 8 个应用） */
-static lv_obj_t *s_hub_hint   = NULL;    /* 底部提示 */
+/* ===== 240x240 单焦点布局：一屏只显示一个应用 =====
+ * 请避免将 240px 屏幕当作手机应用商店：保持大字号、少文字、
+ * 仅呈现当前应用的名称、状态及三个物理按键的操作提示。
+ */
+static lv_obj_t *s_hub_screen = NULL;
+static lv_obj_t *s_orig_screen = NULL;
+static lv_obj_t *s_app_container = NULL;
+static lv_obj_t *s_hub_counter = NULL;
+static lv_obj_t *s_icon_panel = NULL;
+static lv_obj_t *s_icon_label = NULL;
+static lv_obj_t *s_name_label = NULL;
+static lv_obj_t *s_state_label = NULL;
+static lv_obj_t *s_action_label = NULL;
 
-static lv_obj_t *s_app_container = NULL;  /* 运行中应用的容器 */
-static lv_obj_t *s_orig_screen = NULL;   /* 保存原始屏幕，退出大厅时恢复 */
-
-/* 外部字体引用（来自 lvgl_ui_layout.h） */
+/* 使用固件自带中文字库的 ASCII 子集；不依赖额外的 font.bin 下载。 */
 LV_FONT_DECLARE(lv_font_SourceHanSerifCN_SemiBold_22_Default);
 
-/* ===== 内部函数 ===== */
+static lv_obj_t *hub_add_label(lv_obj_t *parent, const char *text,
+                               int16_t x, int16_t y, int16_t width,
+                               const lv_font_t *font, lv_color_t color)
+{
+    lv_obj_t *label = lv_label_create(parent);
+    lv_label_set_text(label, text);
+    lv_obj_set_pos(label, x, y);
+    lv_obj_set_width(label, width);
+    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_set_style_text_color(label, color, 0);
+    if (font != NULL) {
+        lv_obj_set_style_text_font(label, font, 0);
+    }
+    return label;
+}
+
+/* 切换选中项时仅更新少量标签，不重新创建 LVGL 对象。 */
+static void hub_update_selection(void)
+{
+    if (s_hub_counter == NULL || s_name_label == NULL) {
+        return;
+    }
+    if (s_apps == NULL || s_app_count == 0) {
+        lv_label_set_text(s_hub_counter, "0 / 0");
+        lv_label_set_text(s_name_label, "No Apps");
+        lv_label_set_text(s_state_label, "EMPTY");
+        lv_label_set_text(s_action_label, "M: -");
+        lv_label_set_text(s_icon_label, "-");
+        return;
+    }
+
+    const xh_app_entry_t *app = &s_apps[(uint8_t)s_selected];
+    lv_label_set_text_fmt(s_hub_counter, "%u / %u",
+                          (unsigned)(s_selected + 1), (unsigned)s_app_count);
+    lv_label_set_text(s_icon_label, (app->icon != NULL) ? app->icon : "*");
+    lv_label_set_text(s_name_label, (app->name != NULL) ? app->name : "Unknown");
+    lv_label_set_text(s_state_label, app->available ? "BUILT IN" : "COMING SOON");
+    lv_label_set_text(s_action_label, app->available ? "M: Play" : "M: Soon");
+    lv_obj_set_style_bg_color(
+        s_icon_panel,
+        app->available ? lv_color_make(0x16, 0x65, 0x5D)
+                       : lv_color_make(0x36, 0x45, 0x59), 0);
+}
 
 static void hub_create_ui(void)
 {
@@ -41,58 +87,49 @@ static void hub_create_ui(void)
         return;
     }
 
-    s_orig_screen = lv_scr_act();  /* 保存当前屏幕 */
-    s_hub_screen = lv_obj_create(NULL);   /* 创建独立屏幕 */
+    s_orig_screen = lv_scr_act();
+    s_hub_screen = lv_obj_create(NULL);
     lv_obj_set_size(s_hub_screen, DISP_WIDTH, DISP_HEIGHT);
-    lv_obj_set_style_bg_color(s_hub_screen, lv_color_make(0x00, 0x00, 0x00), 0);
+    lv_obj_set_style_bg_color(s_hub_screen, lv_color_make(0x0B, 0x14, 0x24), 0);
     lv_obj_set_style_bg_opa(s_hub_screen, LV_OPA_COVER, 0);
     lv_obj_set_style_pad_all(s_hub_screen, 0, 0);
     lv_obj_set_style_border_width(s_hub_screen, 0, 0);
     lv_obj_clear_flag(s_hub_screen, LV_OBJ_FLAG_SCROLLABLE);
 
-    /* 标题栏 */
-    s_hub_title = lv_label_create(s_hub_screen);
-    lv_label_set_text(s_hub_title, "应用大厅");
-    lv_obj_set_pos(s_hub_title, 0, 2);
-    lv_obj_set_width(s_hub_title, DISP_WIDTH);
-    lv_obj_set_style_text_align(s_hub_title, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
-    lv_obj_set_style_text_color(s_hub_title, lv_color_make(0xFF, 0xFF, 0xFF), 0);
-    lv_obj_set_style_text_font(s_hub_title, &lv_font_SourceHanSerifCN_SemiBold_22_Default, LV_PART_MAIN);
+    /* 顶栏：应用大厅名称 + 索引。 */
+    hub_add_label(s_hub_screen, "APP HUB", 8, 5, 130,
+                  &lv_font_SourceHanSerifCN_SemiBold_22_Default,
+                  lv_color_make(0xF1, 0xF5, 0xFA));
+    s_hub_counter = hub_add_label(s_hub_screen, "", 169, 10, 63,
+                                  NULL, lv_color_make(0xB0, 0xC0, 0xD2));
 
-    /* 列表容器 */
-    s_hub_list = lv_obj_create(s_hub_screen);
-    lv_obj_set_pos(s_hub_list, 4, 26);
-    lv_obj_set_size(s_hub_list, DISP_WIDTH - 8, DISP_HEIGHT - 26 - 16);
-    lv_obj_set_style_bg_color(s_hub_list, lv_color_make(0x00, 0x00, 0x00), 0);
-    lv_obj_set_style_bg_opa(s_hub_list, LV_OPA_COVER, 0);
-    lv_obj_set_style_border_width(s_hub_list, 0, 0);
-    lv_obj_set_style_pad_all(s_hub_list, 2, 0);
-    lv_obj_set_flex_flow(s_hub_list, LV_FLEX_FLOW_COLUMN);
-    lv_obj_clear_flag(s_hub_list, LV_OBJ_FLAG_SCROLLABLE);
+    /* 焦点区：68px 图标 + 22px 名称 + 状态，纵向阅读。 */
+    s_icon_panel = lv_obj_create(s_hub_screen);
+    lv_obj_set_pos(s_icon_panel, (DISP_WIDTH - 68) / 2, 47);
+    lv_obj_set_size(s_icon_panel, 68, 68);
+    lv_obj_set_style_pad_all(s_icon_panel, 0, 0);
+    lv_obj_set_style_border_width(s_icon_panel, 0, 0);
+    lv_obj_set_style_radius(s_icon_panel, 14, 0);
+    lv_obj_clear_flag(s_icon_panel, LV_OBJ_FLAG_SCROLLABLE);
 
-    /* 列表项 */
-    for (uint8_t i = 0; i < s_app_count && i < 8; i++) {
-        s_hub_items[i] = lv_label_create(s_hub_list);
-        lv_obj_set_width(s_hub_items[i], DISP_WIDTH - 16);
-        lv_obj_set_style_text_font(s_hub_items[i], &lv_font_SourceHanSerifCN_SemiBold_22_Default, LV_PART_MAIN);
-        lv_obj_set_style_pad_ver(s_hub_items[i], 2, 0);
+    s_icon_label = hub_add_label(s_icon_panel, "S", 0, 20, 68,
+                                 &lv_font_SourceHanSerifCN_SemiBold_22_Default,
+                                 lv_color_make(0xFF, 0xFF, 0xFF));
+    s_name_label = hub_add_label(s_hub_screen, "", 8, 122, DISP_WIDTH - 16,
+                                 &lv_font_SourceHanSerifCN_SemiBold_22_Default,
+                                 lv_color_make(0xFF, 0xFF, 0xFF));
+    s_state_label = hub_add_label(s_hub_screen, "", 8, 155, DISP_WIDTH - 16,
+                                  NULL, lv_color_make(0xA5, 0xC9, 0xBC));
 
-        char buf[48];
-        if (s_apps[i].available) {
-            lv_snprintf(buf, sizeof(buf), "  %s %s", s_apps[i].icon, s_apps[i].name);
-        } else {
-            lv_snprintf(buf, sizeof(buf), "  %s %s [敬请期待]", s_apps[i].icon, s_apps[i].name);
-        }
-        lv_label_set_text(s_hub_items[i], buf);
-    }
-
-    /* 底部提示 */
-    s_hub_hint = lv_label_create(s_hub_screen);
-    lv_label_set_text(s_hub_hint, "Vol+/-选择 Wakeup确认");
-    lv_obj_set_pos(s_hub_hint, 0, DISP_HEIGHT - 14);
-    lv_obj_set_width(s_hub_hint, DISP_WIDTH);
-    lv_obj_set_style_text_align(s_hub_hint, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
-    lv_obj_set_style_text_color(s_hub_hint, lv_color_make(0x80, 0x80, 0x80), 0);
+    /* 底栏：三键操作，无翻页菜单、详情跳转或虚假的安装按钮。 */
+    hub_add_label(s_hub_screen, "[-] Prev", 5, 195, 70,
+                  NULL, lv_color_make(0xD1, 0xDE, 0xEF));
+    s_action_label = hub_add_label(s_hub_screen, "", 76, 195, 88,
+                                   NULL, lv_color_make(0xE4, 0xF1, 0xFF));
+    hub_add_label(s_hub_screen, "[+] Next", 165, 195, 70,
+                  NULL, lv_color_make(0xD1, 0xDE, 0xEF));
+    hub_add_label(s_hub_screen, "Hold M: Back", 12, 218, DISP_WIDTH - 24,
+                  NULL, lv_color_make(0x86, 0xA3, 0xC0));
 
     hub_update_selection();
     lv_scr_load(s_hub_screen);
@@ -100,82 +137,69 @@ static void hub_create_ui(void)
 
 static void hub_destroy_ui(void)
 {
-    if (s_hub_screen == NULL) {
-        return;
+    if (s_hub_screen != NULL) {
+        /* LVGL 不能销毁当前活动屏幕：先恢复原屏幕。 */
+        if (lv_scr_act() == s_hub_screen && s_orig_screen != NULL) {
+            lv_scr_load(s_orig_screen);
+        }
+        lv_obj_del(s_hub_screen);
     }
-    lv_obj_del(s_hub_screen);
     s_hub_screen = NULL;
-    s_hub_title  = NULL;
-    s_hub_list   = NULL;
-    s_hub_hint   = NULL;
-    for (uint8_t i = 0; i < 8; i++) {
-        s_hub_items[i] = NULL;
-    }
-}
-
-static void hub_update_selection(void)
-{
-    for (uint8_t i = 0; i < s_app_count && i < 8; i++) {
-        if (s_hub_items[i] == NULL) {
-            continue;
-        }
-        if ((int8_t)i == s_selected) {
-            /* 选中项：高亮反白 */
-            lv_obj_set_style_bg_color(s_hub_items[i], lv_color_make(0xFF, 0x82, 0x14), 0);
-            lv_obj_set_style_bg_opa(s_hub_items[i], LV_OPA_COVER, 0);
-            lv_obj_set_style_text_color(s_hub_items[i], lv_color_make(0x00, 0x00, 0x00), 0);
-        } else {
-            lv_obj_set_style_bg_opa(s_hub_items[i], LV_OPA_TRANSP, 0);
-            lv_obj_set_style_text_color(s_hub_items[i], lv_color_make(0xFF, 0xFF, 0xFF), 0);
-        }
-    }
+    s_hub_counter = NULL;
+    s_icon_panel = NULL;
+    s_icon_label = NULL;
+    s_name_label = NULL;
+    s_state_label = NULL;
+    s_action_label = NULL;
 }
 
 static void hub_launch_app(const xh_app_entry_t *app)
 {
-    if (app == NULL || !app->available) {
+    if (app == NULL || !app->available || app->on_create == NULL) {
         return;
     }
 
-    /* 创建应用运行屏幕 */
-    s_app_container = lv_obj_create(NULL);
-    lv_obj_set_size(s_app_container, DISP_WIDTH, DISP_HEIGHT);
-    lv_obj_set_style_bg_color(s_app_container, lv_color_make(0x00, 0x00, 0x00), 0);
-    lv_obj_set_style_bg_opa(s_app_container, LV_OPA_COVER, 0);
-    lv_obj_set_style_pad_all(s_app_container, 0, 0);
-    lv_obj_set_style_border_width(s_app_container, 0, 0);
-    lv_obj_clear_flag(s_app_container, LV_OBJ_FLAG_SCROLLABLE);
-
-    lv_scr_load(s_app_container);
-
-    if (app->on_create != NULL) {
-        if (app->on_create(s_app_container)) {
-            s_running_app = app;
-            s_hub_state = XH_HUB_STATE_RUNNING;
-            log_info("[AppHub] launched app: %s (id=%d)\r\n", app->name, app->id);
-        } else {
-            log_error("[AppHub] app on_create failed: %s\r\n", app->name);
-            lv_obj_del(s_app_container);
-            s_app_container = NULL;
-        }
+    lv_obj_t *screen = lv_obj_create(NULL);
+    if (screen == NULL) {
+        log_error("[AppHub] failed to allocate app screen\r\n");
+        return;
     }
+    lv_obj_set_size(screen, DISP_WIDTH, DISP_HEIGHT);
+    lv_obj_set_style_bg_color(screen, lv_color_make(0, 0, 0), 0);
+    lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, 0);
+    lv_obj_set_style_pad_all(screen, 0, 0);
+    lv_obj_set_style_border_width(screen, 0, 0);
+    lv_obj_clear_flag(screen, LV_OBJ_FLAG_SCROLLABLE);
+
+    /* 构造成功后才切屏；构造失败时释放的不是活动屏幕。 */
+    if (!app->on_create(screen)) {
+        lv_obj_del(screen);
+        log_error("[AppHub] on_create failed: %s\r\n", app->name);
+        return;
+    }
+    s_app_container = screen;
+    s_running_app = app;
+    s_hub_state = XH_HUB_STATE_RUNNING;
+    lv_scr_load(s_app_container);
+    log_info("[AppHub] launched: %s\r\n", app->name);
 }
 
 static void hub_exit_app(void)
 {
     if (s_running_app != NULL && s_running_app->on_destroy != NULL) {
         s_running_app->on_destroy();
-        log_info("[AppHub] exited app: %s\r\n", s_running_app->name);
     }
     s_running_app = NULL;
 
+    /* 先切回大厅，再销毁游戏屏幕，避免释放活动屏幕。 */
+    if (s_hub_screen != NULL) {
+        lv_scr_load(s_hub_screen);
+    }
     if (s_app_container != NULL) {
         lv_obj_del(s_app_container);
         s_app_container = NULL;
     }
-
     s_hub_state = XH_HUB_STATE_LIST;
-    lv_scr_load(s_hub_screen);   /* 回到应用列表 */
 }
 
 /* ===== 公共接口实现 ===== */
@@ -213,14 +237,13 @@ void xh_app_hub_close(void)
         hub_exit_app();
     }
 
-    hub_destroy_ui();
-    s_hub_state = XH_HUB_STATE_HIDDEN;
-
-    /* 恢复原始屏幕（AI 对话界面） */
+    /* 先切回原有 AI 界面，再删除大厅屏幕。 */
     if (s_orig_screen != NULL) {
         lv_scr_load(s_orig_screen);
-        s_orig_screen = NULL;
     }
+    hub_destroy_ui();
+    s_orig_screen = NULL;
+    s_hub_state = XH_HUB_STATE_HIDDEN;
     log_info("[AppHub] closed\r\n");
 }
 
@@ -239,7 +262,8 @@ bool xh_app_hub_handle_key(uint8_t key_event)
         /* 应用列表模式 */
         switch (key_event) {
             case eKey_VolUp_ShortPressed:
-                /* 向上选择 */
+                /* 上一个应用 */
+                if (s_app_count == 0) return true;
                 if (s_selected > 0) {
                     s_selected--;
                 } else {
@@ -249,7 +273,8 @@ bool xh_app_hub_handle_key(uint8_t key_event)
                 return true;
 
             case eKey_VolDw_ShortPressed:
-                /* 向下选择 */
+                /* 下一个应用 */
+                if (s_app_count == 0) return true;
                 s_selected++;
                 if (s_selected >= (int8_t)s_app_count) {
                     s_selected = 0;
