@@ -42,3 +42,7 @@ The reference screenshot includes a Chinese 12px status caption and emoji-shaped
 - The cloud build has **not** compiled this branch against WS63 toolchain.
 - Existing firmware/ files are from earlier revisions, **not** this UI.
 - Run WS63 build, inspect code size and free SRAM, then flash and test on device before merging and issuing Release.
+
+## Default system application (PR #2)
+
+AI Assistant is registered as the first **resident system app**. The App Hub now has five entries; AI Assistant is the initial focus (1/5), while Snake is the next entry (2/5). Selecting AI Assistant returns to the original AI LVGL screen, preserving existing audio and Agent tasks. The original Wi-Fi provisioning and post-provision reboot sequence remain intact; pairing mode blocks the App Hub shortcut. See [boot and default app lifecycle](ai-assistant-default-app.md).
