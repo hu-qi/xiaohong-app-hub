@@ -25,14 +25,20 @@ The reference screenshot includes a Chinese 12px status caption and emoji-shaped
 ### Input and regression
 
 - VolUp short: previous; VolDown short: next; Wakeup/M short: enter; Wakeup/M long: return.
-- The original long VolDown **still conflicts** with brightness-down because it opens App Hub. Resolve this before stable release.
+- **App Hub entry:** press + and - together, hold both for at least 1000ms of overlap, and release either key. The event is emitted once. Long + alone increases brightness; long - alone decreases brightness (500ms threshold). The same chord toggles back to AI; M long still returns from games.
+- The combo is recognized by the GPIO key driver and forwarded via MainTask into LvglTask; no LVGL operation is done inside the interrupt callback.
+- Native CI verifies the chord handler and the actual first-generation key driver under simulated GPIO interrupts. Hardware debouncing and timing require WS63 verification.
 - Wakeup/M 5-second Wi-Fi reconfiguration remains handled in MainTask.
 - All LVGL mutations run on LvglTask through the display message queue; change screens before deleting old ones.
 
 ### Test / release policy
 
 - Static checks: python3 scripts/check_app_hub_visual.py
-- Pixel preview: the companion PNG is a layout-only rendering, **not** an actual LVGL emulator screenshot.
+- Native App Hub C host testing: tests/host/test_app_hub.c
+- Chord unit tests: tests/host/test_volume_chord.c
+- GPIO key driver integration: tests/host/test_key_driver.c
+- Real LVGL 9.2.2 offscreen 240x240 rendering: tests/real_lvgl/apphub_render.c
+- CI produces an actual LVGL 9.2.2 offscreen framebuffer artifact; it is **not** the WS63 device display.
 - The cloud build has **not** compiled this branch against WS63 toolchain.
 - Existing firmware/ files are from earlier revisions, **not** this UI.
 - Run WS63 build, inspect code size and free SRAM, then flash and test on device before merging and issuing Release.
