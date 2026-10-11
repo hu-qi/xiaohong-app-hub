@@ -25,9 +25,9 @@ The reference image includes compact Chinese labels and a snake icon. Current co
 ### Input and regression
 
 - VolUp (+) short: **next**; VolDown (-) short: **previous**; Wakeup/M short: enter; Wakeup/M long: return.
-- **App Hub entry:** press + and - together, hold both for at least 1000ms of overlap, and release either key. The event is emitted once. Long + alone increases brightness; long - alone decreases brightness (500ms threshold). The same chord toggles back to AI; M long still returns from games.
-- The combo is recognized by the GPIO key driver and forwarded via MainTask into LvglTask; no LVGL operation is done inside the interrupt callback.
-- Native CI verifies the chord handler and the actual first-generation key driver under simulated GPIO interrupts. Hardware debouncing and timing require WS63 verification.
+- **App Hub entry:** not assigned to a physical key yet. **Never hold + and - together**: this is XiaoHong's hardware RESET shortcut and must remain reserved. The existing software display event `eDisp_AppHub_Open` remains available for a future verified control. Long + alone increases brightness; long - alone decreases brightness.
+- GPIO volume keys use their stock independent handlers. No key combination logic is present in the WS63 app, and no LVGL operation runs in GPIO interrupts.
+- Native CI verifies the actual first-generation key driver and explicitly rejects any App Hub software chord event. Hardware reset cannot be overridden by software.
 - Wakeup/M 5-second Wi-Fi reconfiguration remains handled in MainTask.
 - All LVGL mutations run on LvglTask through the display message queue; change screens before deleting old ones.
 
@@ -35,7 +35,7 @@ The reference image includes compact Chinese labels and a snake icon. Current co
 
 - Static checks: python3 scripts/check_app_hub_visual.py
 - Native App Hub C host testing: tests/host/test_app_hub.c
-- Chord unit tests: tests/host/test_volume_chord.c
+- Hardware reset reservation test: tests/host/test_key_driver.c (mock GPIO, never exercises real reset)
 - GPIO key driver integration: tests/host/test_key_driver.c
 - Real LVGL 9.2.2 offscreen 240x240 rendering: tests/real_lvgl/apphub_render.c
 - CI produces an actual LVGL 9.2.2 offscreen framebuffer artifact; it is **not** the WS63 device display.
