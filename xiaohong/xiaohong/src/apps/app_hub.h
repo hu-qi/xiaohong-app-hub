@@ -45,7 +45,8 @@ SOFTWARE.
  *   Wakeup 长按 → 返回/退出
  *
  * 进入应用大厅：
- *   VolDw 长按 → 从 AI 模式进入应用大厅
+ *   同时长按 VolUp + VolDw（重叠至少 1000ms），松开任意一键 → 切换大厅
+ *   单独长按 VolUp / VolDw 保持原有亮度调节功能
  */
 
 /* 应用按键事件（由 app_hub 转发给各应用） */
@@ -72,6 +73,8 @@ typedef struct {
     const char *name;          /* 显示名称（UTF-8） */
     const char *icon;          /* 图标符号（LV_SYMBOL 或 emoji） */
     bool available;            /* 是否已实现（false = 占位/敬请期待） */
+    bool system_app;           /* resident OS app, cannot be uninstalled */
+    bool default_app;          /* startup AI frontend, not new agent task */
 
     /*
      * on_create: 创建应用 UI，传入父容器（app_hub 提供的 lv_obj_t）

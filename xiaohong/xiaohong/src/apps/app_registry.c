@@ -13,14 +13,28 @@ Copyright (c) 2026 Shenzhen Open Source Co-Creation Technology Co., Ltd. (AtomGi
 /*
  * 静态应用注册表
  *
- * available=false 的应用会显示在列表中但标记为"敬请期待"，
- * 启动时弹出提示而非真正运行。
+ * All four mini-games are playable and built into firmware.
+ * AI Assistant remains the resident default system application.
  */
 static const xh_app_entry_t s_app_registry[] = {
     {
+        .id         = XH_APP_ID_ASSISTANT,
+        .name       = "AI Assistant",
+        .icon       = "AI",
+        .available  = true,
+        .system_app = true,
+        .default_app = true,
+        /* The stock AI task and LVGL screen already exist. Selecting this
+         * entry returns to that screen; NEVER launch a duplicate AI agent. */
+        .on_create = NULL,
+        .on_destroy = NULL,
+        .on_key = NULL,
+        .on_tick = NULL,
+    },
+    {
         .id         = XH_APP_ID_SNAKE,
-        .name       = "贪吃蛇",
-        .icon       = LV_SYMBOL_OK,       /* 暂用内置符号，后续可换 emoji */
+        .name       = "Snake",
+        .icon       = "S",       /* 暂用内置符号，后续可换 emoji */
         .available  = true,
         .on_create  = snake_game_create,
         .on_destroy = snake_game_destroy,
@@ -29,9 +43,9 @@ static const xh_app_entry_t s_app_registry[] = {
     },
     {
         .id         = XH_APP_ID_TETRIS,
-        .name       = "俄罗斯方块",
-        .icon       = LV_SYMBOL_CLOSE,
-        .available  = false,              /* 预留接口，尚未实现 */
+        .name       = "Tetris",
+        .icon       = "T",
+        .available  = true,
         .on_create  = tetris_game_create,
         .on_destroy = tetris_game_destroy,
         .on_key     = tetris_game_on_key,
@@ -39,9 +53,9 @@ static const xh_app_entry_t s_app_registry[] = {
     },
     {
         .id         = XH_APP_ID_BREAKOUT,
-        .name       = "打砖块",
-        .icon       = LV_SYMBOL_BATTERY_2,
-        .available  = false,
+        .name       = "Breakout",
+        .icon       = "B",
+        .available  = true,
         .on_create  = breakout_game_create,
         .on_destroy = breakout_game_destroy,
         .on_key     = breakout_game_on_key,
@@ -50,8 +64,8 @@ static const xh_app_entry_t s_app_registry[] = {
     {
         .id         = XH_APP_ID_LIQUID_DUCK,
         .name       = "LiquidDuck",
-        .icon       = LV_SYMBOL_WIFI,
-        .available  = false,
+        .icon       = "D",
+        .available  = true,
         .on_create  = liquid_duck_create,
         .on_destroy = liquid_duck_destroy,
         .on_key     = liquid_duck_on_key,

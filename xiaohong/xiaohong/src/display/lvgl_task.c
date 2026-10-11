@@ -358,6 +358,33 @@ void disp_update_ui(uint8_t cmd)
         return;
     }
 
+    /* App Hub 使用独立的 LVGL screen。必须先分流，不能让 App Hub
+     * 事件触发下方 AI 页面类型判断（原代码会隐藏 AI 表情/对话区域）。 */
+    if (cmd == eDisp_AppHub_Open) {
+        xh_app_hub_open();
+        return;
+    }
+    if (cmd == eDisp_AppHub_Close) {
+        xh_app_hub_close();
+        return;
+    }
+    if (cmd == eDisp_AppHub_Toggle) {
+        if (xh_app_hub_is_active()) {
+            xh_app_hub_close();
+        } else {
+            xh_app_hub_open();
+        }
+        return;
+    }
+    if (cmd == eDisp_AppHub_Tick) {
+        xh_app_hub_tick();
+        return;
+    }
+    if (cmd >= eDisp_AppHub_KeyBase) {
+        xh_app_hub_handle_key(cmd - eDisp_AppHub_KeyBase);
+        return;
+    }
+
     static uint8_t page = 0;
     agent_state_t agent_st = AGENT_STATE_IDLE;
     uint8_t wifi_st  = eWifi_St_DisConnected;
@@ -386,12 +413,6 @@ void disp_update_ui(uint8_t cmd)
         // eDisp_Blk_On,         // 亮屏, 与UI布局无关
         // eDisp_Blk_Off,        // 息屏, 与UI布局无关
         // eDisp_Bar_Update,     // 状态栏, 一直存在，只是内容更新，与UI布局无关
-    }
-
-    /* App Hub key event routing — 从 MainTask 转发过来的按键 */
-    if (cmd >= eDisp_AppHub_KeyBase) {
-        xh_app_hub_handle_key(cmd - eDisp_AppHub_KeyBase);
-        return;
     }
 
     switch (cmd) {
@@ -636,16 +657,6 @@ void disp_update_ui(uint8_t cmd)
             lv_label_set_text(full_txt, "\n固件升级失败\n请检查网络后重试\n或重启设备");
             break;
         }
-        case eDisp_AppHub_Open:
-            xh_app_hub_open();
-            break;
-        case eDisp_AppHub_Close:
-            xh_app_hub_close();
-            break;
-        case eDisp_AppHub_Tick:
-            xh_app_hub_tick();
-            break;
-
         case eDisp_Debug_Font_Delete:
             lv_label_set_text(full_txt, "\n字库已删除\n联网后会重新下载");
             break;

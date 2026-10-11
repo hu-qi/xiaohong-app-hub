@@ -11,7 +11,9 @@
 #include "key_config.h"
 
 static uint8_t frame[240 * 240 * 2];
-static uint8_t render_buf[240 * 240 * 2];
+/* Match first-generation OH6.1's 20-line RGB565 partial display buffer,
+ * rather than hiding SRAM pressure with a 115KB full-screen host buffer. */
+static uint8_t render_buf[240 * 20 * 2];
 
 /* Real LVGL 9 integration test: link actual registry and all four games. */
 void xh_app_installer_init(void) {}
@@ -73,7 +75,7 @@ int main(int argc,char **argv) {
     lv_display_set_color_format(display,LV_COLOR_FORMAT_RGB565);
     lv_display_set_flush_cb(display,flush_cb);
     lv_display_set_buffers(display,render_buf,NULL,sizeof(render_buf),
-                           LV_DISPLAY_RENDER_MODE_FULL);
+                           LV_DISPLAY_RENDER_MODE_PARTIAL);
     lv_obj_t *ai=lv_scr_act();
     xh_app_hub_init();
     xh_app_hub_open();

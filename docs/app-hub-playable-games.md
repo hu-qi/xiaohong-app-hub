@@ -44,3 +44,11 @@ LiquidDuck 当前是专门适配三按键的 **接雨滴／避污染** 迷你游
 ## App Hub 按键导航校正
 
 首页底部显示 `- Prev`、`+ Next`，实际按键处理已同步为 **短按 - 上一个、短按 + 下一个**；进入各游戏后按照各自的游戏按键规则操作。组合长按 `+/-` 约 1 秒后松开切换 App Hub。
+
+## 2026-10-11: Build handoff and heap stress validation
+
+- Added `scripts/ws63-build-handoff.sh` with **read-only `--check` as default**. `--stage` explicitly backs up the current SDK vendor files before overlay, and `--build` requires a staged commit and produces fresh firmware + SHA256 / build logs. Paths are listed in `scripts/ws63-overlay-manifest.txt`.
+- First-generation WS63 LVGL target allocates a **240×20×2 = 9,600-byte partial RGB565 buffer** under OpenHarmony 6.1. The native LVGL 9.2.2 renderer now tests this same `LV_DISPLAY_RENDER_MODE_PARTIAL` path instead of using a full 115,200-byte buffer.
+- After initial icon and game validation, CI runs **20 more full cycles**, visiting all four actual game implementations. In native LVGL, reported free heap was **53,232 bytes before and after** the cycles, with no sustained decrease. This is evidence for the host LVGL allocator only; it does not measure the WS63's total free SRAM/heap.
+- The verified workflow is [PR #2 LVGL partial-buffer and stress checks](https://github.com/hu-qi/xiaohong-app-hub/actions/runs/38112769682).
+- **Cross-compile and device flash are still NOT complete.** Read the corrected [firmware build and flashing guide](../firmware/FLASH_AND_TEST_GUIDE.md), and do not flash any old `firmware/*.fwpkg` as a build of this PR.
