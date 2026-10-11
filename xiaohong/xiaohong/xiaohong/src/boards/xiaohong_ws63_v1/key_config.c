@@ -24,7 +24,6 @@ SOFTWARE.
 
 #include "board_config.h"
 #include "key_config.h"
-#include "volume_chord.h"
 #include "log.h"
 #include <stddef.h>
 
@@ -42,56 +41,48 @@ static void send_key_event(uint8_t event)
     }
 }
 
-/* In AI mode:
- * + long: brightness up, - long: brightness down (both preserved).
- * Press BOTH +/- for 1000ms, release either: toggle App Hub once.
- * The chord is emitted on release, not from a timer or LVGL ISR.
- */
-#define XH_APP_HUB_CHORD_MS 1000U
-
-static xh_volume_chord_t s_volume_chord;
-
-static void send_volume_event(xh_volume_event_t event)
-{
-    switch (event) {
-        case XH_VOLUME_EVENT_PLUS_SHORT:
-            send_key_event(eKey_VolUp_ShortPressed);
-            break;
-        case XH_VOLUME_EVENT_PLUS_LONG:
-            send_key_event(eKey_VolUp_LongPressed);
-            break;
-        case XH_VOLUME_EVENT_MINUS_SHORT:
-            send_key_event(eKey_VolDw_ShortPressed);
-            break;
-        case XH_VOLUME_EVENT_MINUS_LONG:
-            send_key_event(eKey_VolDw_LongPressed);
-            break;
-        case XH_VOLUME_EVENT_HUB_TOGGLE:
-            send_key_event(eKey_AppHub_Toggle);
-            break;
-        default:
-            break;
-    }
-}
-
 static void volup_key_event_cb(pin_t pin, uintptr_t param)
 {
     (void)pin;
     (void)param;
-    send_volume_event(xh_volume_chord_edge(
-        &s_volume_chord, XH_VOLUME_PLUS,
-        uapi_gpio_get_val(KEY_VOLUP_PIN) == 0, uapi_tcxo_get_ms(),
-        KEY_LONG_PRESS_INTERVAL, XH_APP_HUB_CHORD_MS));
+    static uint32_t g_key_volup_time_begin = 0;
+    if ((g_key_volup_time_begin == 0) && (0 == uapi_gpio_get_val(KEY_VOLUP_PIN))) {
+        g_key_volup_time_begin = uapi_tcxo_get_ms();
+    } else {
+        if (g_key_volup_time_begin != 0) {
+            uint32_t g_key_volup_time_end = uapi_tcxo_get_ms();
+            if ((g_key_volup_time_end - g_key_volup_time_begin) >= KEY_LONG_PRESS_INTERVAL) {
+                log_info("[KeyConfg] VolUpKey LongPress:   [%d]\r\n", eKey_VolUp_LongPressed);
+                send_key_event(eKey_VolUp_LongPressed);
+            } else {
+                log_info("[KeyConfg] VolUpKey ShortPress:  [%d]\r\n", eKey_VolUp_ShortPressed);
+                send_key_event(eKey_VolUp_ShortPressed);
+            }
+            g_key_volup_time_begin = 0;
+        }
+    }
 }
 
 static void voldw_key_event_cb(pin_t pin, uintptr_t param)
 {
     (void)pin;
     (void)param;
-    send_volume_event(xh_volume_chord_edge(
-        &s_volume_chord, XH_VOLUME_MINUS,
-        uapi_gpio_get_val(KEY_VOLDW_PIN) == 0, uapi_tcxo_get_ms(),
-        KEY_LONG_PRESS_INTERVAL, XH_APP_HUB_CHORD_MS));
+    static uint32_t g_key_voldw_time_begin = 0;
+    if ((g_key_voldw_time_begin == 0) && (0 == uapi_gpio_get_val(KEY_VOLDW_PIN))) {
+        g_key_voldw_time_begin = uapi_tcxo_get_ms();
+    } else {
+        if (g_key_voldw_time_begin != 0) {
+            uint32_t g_key_voldw_time_end = uapi_tcxo_get_ms();
+            if ((g_key_voldw_time_end - g_key_voldw_time_begin) >= KEY_LONG_PRESS_INTERVAL) {
+                log_info("[KeyConfg] VolDwKey LongPress:   [%d]\r\n", eKey_VolDw_LongPressed);
+                send_key_event(eKey_VolDw_LongPressed);
+            } else {
+                log_info("[KeyConfg] VolDwKey ShortPress:  [%d]\r\n", eKey_VolDw_ShortPressed);
+                send_key_event(eKey_VolDw_ShortPressed);
+            }
+            g_key_voldw_time_begin = 0;
+        }
+    }
 }
 
 static void wakeup_key_event_cb(pin_t pin, uintptr_t param)

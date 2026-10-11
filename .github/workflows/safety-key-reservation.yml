@@ -1,0 +1,39 @@
+name: WS63 Hardware Reset Reservation
+on:
+  pull_request:
+    paths:
+      - "xiaohong/xiaohong/xiaohong/**"
+      - "tests/host/**"
+      - "scripts/check_app_hub_visual.py"
+      - "scripts/ws63-*"
+      - ".github/workflows/safety-key-reservation.yml"
+  push:
+    branches: [fix/reserve-volume-reset-chord]
+jobs:
+  reserved-reset-key:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assert hardware volume chord cannot launch App Hub
+        run: |
+          python3 scripts/check_app_hub_visual.py
+          ! grep -R -n 'eKey_AppHub_Toggle\|eDisp_AppHub_Toggle' xiaohong/xiaohong/xiaohong/src
+          ! grep -n 'volume_chord.c' xiaohong/xiaohong/xiaohong/BUILD.gn
+          test ! -e xiaohong/xiaohong/xiaohong/src/boards/xiaohong_ws63_v1/volume_chord.c
+      - name: Compile real WS63 GPIO driver against host fake GPIO
+        run: |
+          cc -std=c11 -Wall -Wextra -Werror -pedantic \
+            -Itests/host \
+            -Ixiaohong/xiaohong/xiaohong/src/boards/xiaohong_ws63_v1 \
+            tests/host/test_key_driver.c \
+            xiaohong/xiaohong/xiaohong/src/boards/xiaohong_ws63_v1/key_config.c \
+            -o /tmp/xh-reset-reservation
+          /tmp/xh-reset-reservation
+      - name: Check SDK overlay script and manifest use actual GN path
+        run: |
+          bash -n scripts/ws63-build-handoff.sh
+          grep -q 'BASE/xiaohong/xiaohong' scripts/ws63-build-handoff.sh
+          ! grep -q 'volume_chord' scripts/ws63-overlay-manifest.txt
+          test -f xiaohong/xiaohong/xiaohong/BUILD.gn

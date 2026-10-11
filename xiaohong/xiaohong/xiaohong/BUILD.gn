@@ -61,7 +61,6 @@ static_library("xiaohong") {
     sources += [
       "src/boards/xiaohong_ws63_v1/board_config.c",
       "src/boards/xiaohong_ws63_v1/key_config.c",
-      "src/boards/xiaohong_ws63_v1/volume_chord.c",
       "src/boards/xiaohong_ws63_v1/w25q128.c",
     ]
     include_dirs += [

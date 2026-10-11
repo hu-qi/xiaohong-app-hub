@@ -156,7 +156,6 @@ void MainTask(void)
             msg_recv != eKey_Wakeup_LongPressed_5S &&
             msg_recv != eKey_VolUp_LongPressed &&
             msg_recv != eKey_VolDw_LongPressed &&
-            msg_recv != eKey_AppHub_Toggle &&
             xh_app_hub_is_active()) {
             msg_send = eDisp_AppHub_KeyBase + msg_recv;
             osMessageQueuePut(g_disp_event_qid, (const void *) &msg_send, 0, 0);
@@ -210,20 +209,6 @@ void MainTask(void)
             case eKey_VolDw_LongPressed: {
                 /* Preserve the stock brightness-down behavior. */
                 decrease_blk_level();
-                break;
-            }
-            case eKey_AppHub_Toggle: {
-                /* Provisioning owns the screen until Wi-Fi setup and reboot
-                 * finish. The chord must not obscure the Wi-Fi pairing UI. */
-                if (reconfig_wifi || get_wifi_status() == eWifi_St_ReConfiguring) {
-                    log_info("[MainTask] App Hub blocked during Wi-Fi provisioning\r\n");
-                    break;
-                }
-                /* Only LvglTask may create/destroy app screens. */
-                #if defined(SUPPORT_LVGL)
-                msg_send = eDisp_AppHub_Toggle;
-                osMessageQueuePut(g_disp_event_qid, (const void *) &msg_send, 0, 0);
-                #endif
                 break;
             }
             case eKey_Wakeup_ShortPressed: {

@@ -368,14 +368,6 @@ void disp_update_ui(uint8_t cmd)
         xh_app_hub_close();
         return;
     }
-    if (cmd == eDisp_AppHub_Toggle) {
-        if (xh_app_hub_is_active()) {
-            xh_app_hub_close();
-        } else {
-            xh_app_hub_open();
-        }
-        return;
-    }
     if (cmd == eDisp_AppHub_Tick) {
         xh_app_hub_tick();
         return;
