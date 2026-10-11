@@ -37,6 +37,7 @@ SOFTWARE.
 
 /* 应用 ID 枚举 */
 enum {
+    XH_APP_ID_ASSISTANT = 0, /* resident voice assistant system app */
     XH_APP_ID_SNAKE = 1,
     XH_APP_ID_TETRIS,
     XH_APP_ID_BREAKOUT,
