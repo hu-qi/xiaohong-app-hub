@@ -6,7 +6,10 @@
  * CodeArts plugin convention: export async plugin factory returning named hooks.
  * Set PIXELPET_HOOK_TOKEN and PIXELPET_SOURCE=codearts-cli|codearts-ide.
  */
-const ENDPOINT = "http://127.0.0.1:17373/v1/events";
+const bridgePort = Number(process.env.PIXELPET_PORT || "17373");
+const port = Number.isInteger(bridgePort) && bridgePort > 0 && bridgePort <= 65535
+  ? bridgePort : 17373;
+const ENDPOINT = "http://127.0.0.1:" + port + "/v1/events";
 const ALLOWED_SOURCE = new Set(["codearts-cli", "codearts-ide"]);
 
 function classifyTool(raw) {
