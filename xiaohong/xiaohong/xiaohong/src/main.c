@@ -169,11 +169,15 @@ void MainTask(void)
 #if defined(SUPPORT_LVGL)
         /* Every loop must expire singles, even if no new queue event arrives. */
         const uint32_t now_ms = uapi_tcxo_get_ms();
-        if (is_downloading || reconfig_wifi ||
-            get_wifi_status() == eWifi_St_ReConfiguring) {
+        if (is_downloading || reconfig_wifi) {
             xh_m_double_tap_cancel(&m_tap);
-        } else if (xh_m_double_tap_poll(&m_tap, now_ms)) {
-            dispatch_m_single();
+        } else if (m_tap.pending) {
+            /* Avoid polling Wi-Fi 25 times/s when no click is pending. */
+            if (get_wifi_status() == eWifi_St_ReConfiguring) {
+                xh_m_double_tap_cancel(&m_tap);
+            } else if (xh_m_double_tap_poll(&m_tap, now_ms)) {
+                dispatch_m_single();
+            }
         }
 #endif
         if (ret != osOK) {
