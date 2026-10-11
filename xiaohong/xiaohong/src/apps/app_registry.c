@@ -18,6 +18,20 @@ Copyright (c) 2026 Shenzhen Open Source Co-Creation Technology Co., Ltd. (AtomGi
  */
 static const xh_app_entry_t s_app_registry[] = {
     {
+        .id         = XH_APP_ID_ASSISTANT,
+        .name       = "AI Assistant",
+        .icon       = "AI",
+        .available  = true,
+        .system_app = true,
+        .default_app = true,
+        /* The stock AI task and LVGL screen already exist. Selecting this
+         * entry returns to that screen; NEVER launch a duplicate AI agent. */
+        .on_create = NULL,
+        .on_destroy = NULL,
+        .on_key = NULL,
+        .on_tick = NULL,
+    },
+    {
         .id         = XH_APP_ID_SNAKE,
         .name       = "Snake",
         .icon       = "S",       /* 暂用内置符号，后续可换 emoji */
