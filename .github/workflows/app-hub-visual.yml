@@ -14,6 +14,8 @@ on:
       - "xiaohong/xiaohong/src/boards/xiaohong_ws63_v1/volume_chord.*"
       - "tests/real_lvgl/**"
       - "scripts/ppm_to_png.py"
+      - "scripts/ws63-*"
+      - "firmware/FLASH_AND_TEST_GUIDE.md"
       - ".github/workflows/app-hub-visual.yml"
 jobs:
   source-checks:
@@ -24,6 +26,15 @@ jobs:
       - uses: actions/checkout@v4
       - name: Verify UI layout invariants
         run: python3 scripts/check_app_hub_visual.py
+      - name: Verify WS63 handoff is shell-safe and read-only by default
+        run: |
+          bash -n scripts/ws63-build-handoff.sh
+          temp="$(mktemp -d)"
+          trap 'rm -rf "$temp"' EXIT
+          mkdir -p "$temp/.repo" "$temp/vendor/atomgit/xiaohong/xiaohong"
+          cp xiaohong/xiaohong/BUILD.gn "$temp/vendor/atomgit/xiaohong/xiaohong/BUILD.gn"
+          bash scripts/ws63-build-handoff.sh --check "$temp"
+          test ! -e "$temp/out"
       - name: Compile native App Hub C tests
         run: |
           cc -std=c11 -Wall -Wextra -Werror -pedantic \
