@@ -6,6 +6,7 @@
  */
 import http from "node:http";
 import net from "node:net";
+import { pathToFileURL } from "node:url";
 import { timingSafeEqual } from "node:crypto";
 import { createStateStore } from "./core.mjs";
 
