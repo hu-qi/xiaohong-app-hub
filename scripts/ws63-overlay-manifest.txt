@@ -1,6 +1,8 @@
 # PR #2 first-generation xiaohong WS63 overlay (vendor/atomgit/xiaohong)
 xiaohong/BUILD.gn
 xiaohong/src/main.c
+xiaohong/src/m_double_tap.c
+xiaohong/src/m_double_tap.h
 xiaohong/src/apps/app_hub.c
 xiaohong/src/apps/app_hub.h
 xiaohong/src/apps/app_registry.c
