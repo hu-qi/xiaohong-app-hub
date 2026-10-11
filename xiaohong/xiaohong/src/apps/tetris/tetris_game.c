@@ -7,7 +7,9 @@ Copyright (c) 2026 Shenzhen Open Source Co-Creation Technology Co., Ltd. (AtomGi
 #include "log.h"
 #include <string.h>
 
-/* 10x16 board: 160 reusable LVGL squares, no 115KB full-screen framebuffer. */
+/* 10x16 game state with ONE custom-drawn LVGL object.
+ * Avoid 160 lv_obj_t allocations: they exhausted the native LVGL memory pool.
+ * No dedicated 120x192 RGB565 framebuffer is allocated either. */
 #define TW 10
 #define TH 16
 #define TC 12
@@ -15,7 +17,7 @@ Copyright (c) 2026 Shenzhen Open Source Co-Creation Technology Co., Ltd. (AtomGi
 #define TY 17
 enum { T_READY, T_PLAYING, T_OVER };
 static uint8_t board[TH][TW];
-static lv_obj_t *cells[TH][TW];
+static lv_obj_t *board_obj;
 static lv_obj_t *hud, *prompt;
 static int8_t px,py;
 static uint8_t kind,rotation,status,gravity,sequence;
@@ -62,16 +64,38 @@ static void title(void) {
                               status==T_OVER?"GAME OVER  M:RETRY":
                               "+ LEFT   - RIGHT   M TURN");
 }
-static void render(void) {
+/* LVGL9 draw events render the board from 160 bytes of backing game state.
+ * This replaces 160 individual LVGL rectangles (OOM on the host's 64KB pool).
+ * Keep the draw callback on LvglTask, never on MainTask or GPIO interrupt. */
+static void board_draw(lv_event_t *event) {
+    lv_obj_t *obj=(lv_obj_t *)lv_event_get_target(event);
+    lv_layer_t *layer=lv_event_get_layer(event);
+    lv_area_t origin;
+    lv_obj_get_coords(obj,&origin);
     for(int y=0;y<TH;y++)for(int x=0;x<TW;x++) {
-        lv_color_t c=board[y][x]?lv_color_make(97,190,239):lv_color_make(24,36,54);
+        lv_color_t color=board[y][x]?lv_color_make(97,190,239):
+                                      lv_color_make(24,36,54);
         if(status!=T_OVER)for(uint8_t i=0;i<4;i++) {
             if(px+cell_x(i,rotation)==x&&py+cell_y(i,rotation)==y) {
-                c=lv_color_make(246,202,95);break;
+                color=lv_color_make(246,202,95);break;
             }
         }
-        lv_obj_set_style_bg_color(cells[y][x],c,0);
+        lv_draw_rect_dsc_t d;
+        lv_draw_rect_dsc_init(&d);
+        d.bg_color=color;
+        d.bg_opa=LV_OPA_COVER;
+        d.radius=1;
+        lv_area_t cell={
+            .x1=(int16_t)(origin.x1+x*TC),
+            .y1=(int16_t)(origin.y1+y*TC),
+            .x2=(int16_t)(origin.x1+x*TC+TC-2),
+            .y2=(int16_t)(origin.y1+y*TC+TC-2)
+        };
+        lv_draw_rect(layer,&d,&cell);
     }
+}
+static void render(void) {
+    if(board_obj)lv_obj_invalidate(board_obj);
     title();
 }
 static void reset(void) {
@@ -100,17 +124,12 @@ static void lock_piece(void) {
 bool tetris_game_create(lv_obj_t *parent) {
     if(!parent)return false;
     lv_obj_set_style_bg_color(parent,lv_color_make(9,17,31),0);
-    for(int y=0;y<TH;y++)for(int x=0;x<TW;x++) {
-        lv_obj_t *obj=lv_obj_create(parent);
-        cells[y][x]=obj;
-        lv_obj_set_pos(obj,TX+x*TC,TY+y*TC);
-        lv_obj_set_size(obj,TC-1,TC-1);
-        lv_obj_set_style_bg_opa(obj,LV_OPA_COVER,0);
-        lv_obj_set_style_pad_all(obj,0,0);
-        lv_obj_set_style_radius(obj,1,0);
-        lv_obj_set_style_border_width(obj,0,0);
-        lv_obj_clear_flag(obj,LV_OBJ_FLAG_SCROLLABLE);
-    }
+    board_obj=lv_obj_create(parent);
+    lv_obj_remove_style_all(board_obj);
+    lv_obj_set_pos(board_obj,TX,TY);
+    lv_obj_set_size(board_obj,TW*TC,TH*TC);
+    lv_obj_clear_flag(board_obj,LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_add_event_cb(board_obj,board_draw,LV_EVENT_DRAW_MAIN,NULL);
     hud=lv_label_create(parent);lv_obj_set_pos(hud,49,1);lv_obj_set_width(hud,152);
     lv_obj_set_style_text_color(hud,lv_color_make(232,241,251),0);
     prompt=lv_label_create(parent);lv_obj_set_pos(prompt,0,217);
@@ -120,7 +139,7 @@ bool tetris_game_create(lv_obj_t *parent) {
     reset();return true;
 }
 void tetris_game_destroy(void) {
-    memset(cells,0,sizeof(cells));hud=NULL;prompt=NULL;
+    board_obj=NULL;hud=NULL;prompt=NULL;
     status=T_READY;
 }
 void tetris_game_on_key(uint8_t key) {
