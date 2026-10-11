@@ -21,17 +21,12 @@ static bool create_game(lv_obj_t *screen) {
 static void destroy_game(void) {}
 static void key_game(uint8_t key) { (void)key; }
 static void tick_game(void) {}
-static const xh_app_entry_t entries[] = {
-    {.id=XH_APP_ID_ASSISTANT,.name="AI Assistant",.icon="AI",.available=true,.system_app=true,.default_app=true},
-    {.id=XH_APP_ID_SNAKE,.name="Snake",.icon="S",.available=true,.on_create=create_game,.on_destroy=destroy_game,.on_key=key_game,.on_tick=tick_game},
-    {.id=XH_APP_ID_TETRIS,.name="Tetris",.icon="T",.available=false},
-    {.id=XH_APP_ID_BREAKOUT,.name="Breakout",.icon="B",.available=false},
-    {.id=XH_APP_ID_LIQUID_DUCK,.name="LiquidDuck",.icon="D",.available=false}
-};
-const xh_app_entry_t *xh_app_registry_get_all(uint8_t *count) {
-    *count = sizeof(entries)/sizeof(entries[0]);
-    return entries;
-}
+/* Snake is already exercised by the separate App Hub host lifecycle test.
+ * Link actual Tetris/Breakout/LiquidDuck code for native LVGL smoke tests. */
+bool snake_game_create(lv_obj_t *screen) {return create_game(screen);}
+void snake_game_destroy(void) {destroy_game();}
+void snake_game_on_key(uint8_t key) {key_game(key);}
+void snake_game_on_tick(void) {tick_game();}
 void xh_app_installer_init(void) {}
 
 static void flush_cb(lv_display_t *display, const lv_area_t *area, uint8_t *px) {
@@ -57,32 +52,61 @@ static void export_ppm(const char *filename) {
     }
     fclose(out);
 }
+static unsigned icon_colors(void) {
+    /* Inner tile area has at least background + solid sprite color.
+     * RGB565 is compared directly in the true upstream LVGL framebuffer. */
+    uint16_t first=0;bool found=false;
+    unsigned distinct=0;
+    for(int y=54;y<113;y++)for(int x=89;x<151;x++) {
+        size_t offset=((size_t)y*240U+(size_t)x)*2;
+        uint16_t pixel=(uint16_t)frame[offset]|((uint16_t)frame[offset+1]<<8);
+        if(!found) {first=pixel;found=true;distinct=1;}
+        else if(pixel!=first) {distinct=2;break;}
+    }
+    return distinct;
+}
 int main(int argc,char **argv) {
     const char *ppm = argc>1?argv[1]:"apphub-240x240.ppm";
     lv_init();
-    lv_display_t *display = lv_display_create(240,240);
+    lv_display_t *display=lv_display_create(240,240);
     assert(display);
     lv_display_set_color_format(display,LV_COLOR_FORMAT_RGB565);
     lv_display_set_flush_cb(display,flush_cb);
     lv_display_set_buffers(display,render_buf,NULL,sizeof(render_buf),
                            LV_DISPLAY_RENDER_MODE_FULL);
-    lv_obj_t *ai = lv_scr_act();
+    lv_obj_t *ai=lv_scr_act();
     xh_app_hub_init();
     xh_app_hub_open();
-    assert(xh_app_hub_is_active() && ai != lv_scr_act());
-    xh_app_hub_handle_key(eKey_VolDw_ShortPressed); /* show Snake for screenshot */
-    lv_obj_update_layout(lv_scr_act());
-    lv_refr_now(display);
-    export_ppm(ppm);
-    xh_app_hub_handle_key(eKey_VolDw_ShortPressed);
-    lv_refr_now(display);
-    xh_app_hub_handle_key(eKey_VolUp_ShortPressed);
+    assert(xh_app_hub_is_active() && ai!=lv_scr_act());
+    uint8_t count=0;
+    const xh_app_entry_t *registry=xh_app_registry_get_all(&count);
+    assert(count==5 && registry[0].system_app);
+    for(unsigned id=0;id<count;id++) {
+        if(id>0)xh_app_hub_handle_key(eKey_VolDw_ShortPressed);
+        lv_obj_update_layout(lv_scr_act());lv_refr_now(display);
+        assert(icon_colors()>=2 && "Icon must render above tile, not be blank");
+        if(id==1)export_ppm(ppm); /* historical artifact is the Snake Hub tile */
+        if(id==0)continue; /* AI Assistant is a resident screen, not a game. */
+
+        lv_obj_t *hub=lv_scr_act();
+        xh_app_hub_handle_key(eKey_Wakeup_ShortPressed);
+        assert(lv_scr_act()!=hub && "every game in registry must start");
+        /* Each game starts/rotates with M and moves using +/-.
+         * No 240px framebuffer inside firmware; this is native host LVGL. */
+        xh_app_hub_handle_key(eKey_Wakeup_ShortPressed);
+        for(unsigned tick=0;tick<360;tick++) {
+            if(tick%13==0)xh_app_hub_handle_key(eKey_VolDw_ShortPressed);
+            if(tick%19==0)xh_app_hub_handle_key(eKey_VolUp_ShortPressed);
+            xh_app_hub_tick();
+            if(tick%30==0)lv_refr_now(display);
+        }
+        lv_obj_update_layout(lv_scr_act());lv_refr_now(display);
+        xh_app_hub_handle_key(eKey_Wakeup_LongPressed);
+        assert(lv_scr_act()==hub && xh_app_hub_is_active());
+    }
+    xh_app_hub_handle_key(eKey_VolDw_ShortPressed); /* wrap Duck -> AI */
     xh_app_hub_handle_key(eKey_Wakeup_ShortPressed);
-    assert(xh_app_hub_is_active());
-    xh_app_hub_handle_key(eKey_Wakeup_LongPressed); /* game -> App Hub */
-    xh_app_hub_handle_key(eKey_VolUp_ShortPressed); /* Snake -> AI Assistant */
-    xh_app_hub_handle_key(eKey_Wakeup_ShortPressed); /* AI Assistant -> original AI */
     assert(!xh_app_hub_is_active() && lv_scr_act()==ai);
-    printf("PASS: real LVGL 9 rendered 240x240 Snake entry; resident AI navigation roundtrip\n");
+    printf("PASS: 5 native LVGL shape icons visible, 4 games launch/tick/exit, 240x240 render\n");
     return 0;
 }
