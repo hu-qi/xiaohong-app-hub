@@ -42,7 +42,7 @@
 [OHOS INFO] [LOAD] generate syscap info with part name list to '/root/ohos_src/out/preloader/xiaohong/system/etc/syscap.json'
 [OHOS INFO] [LOAD] generate target syscap for init list to '/root/ohos_src/out/preloader/xiaohong/system/etc/param/syscap.para'
 
-[OHOS INFO] [GN] Excuting gn command: /root/ohos_src/prebuilts/build-tools/linux-x86/bin/gn gen --args="product_name=\"xiaohong\" target_cpu=\"riscv32\" target_os=\"ohos\" precise_branch=\"\" is_mini_system=true product_path=\"//vendor/atomgit/xiaohong\" product_config_path=\"/root/ohos_src/vendor/atomgit/xiaohong\" device_name=\"xiaohong\" device_path=\"//device/board/atomgit/xiaohong\" device_company=\"atomgit\" device_config_path=\"/root/ohos_src/device/board/atomgit/xiaohong/liteos_m\" ohos_kernel_type=\"liteos_m\" ohos_build_compiler_specified=\"\" ohos_build_time=1791653425435 ohos_build_datetime=\"2026-10-11 09:30:25\" hilog_lite_mini=true hievent_lite_mini=true enable_ohos_systemabilitymgr_samgr_lite_broadcast=false enable_ohos_systemabilitymgr_samgr_lite_system_capability=false config_ohos_systemabilitymgr_samgr_lite_shared_task_size=2048 enable_ohos_systemabilitymgr_samgr_lite_specified_task=false enable_ohos_systemabilitymgr_samgr_lite_no_task=false huks_use_lite_storage=true huks_use_hardware_root_key=true huks_config_file=\"hks_config_lite.h\" bootstrap_lite_enable_bootstrap_service=false init_feature_begetctl_liteos=true init_lite_use_thirdparty_mbedtls=true utils_lite_feature_file=true use_thin_lto=false ohos_build_type=\"debug\" device_type=\"default\" build_variant=\"root\" root_perf_main=\"main\" runtime_mode=\"release\"" --args=product_name="xiaohong" target_cpu="riscv32" target_os="ohos" precise_branch="" is_mini_system=true product_path="//vendor/atomgit/xiaohong" product_config_path="/root/ohos_src/vendor/atomgit/xiaohong" device_name="xiaohong" device_path="//device/board/atomgit/xiaohong" device_company="atomgit" device_config_path="/root/ohos_src/device/board/atomgit/xiaohong/liteos_m" ohos_kernel_type="liteos_m" ohos_build_compiler_specified="" ohos_build_time=1791653425435 ohos_build_datetime="2026-10-11 09:30:25" hilog_lite_mini=true hievent_lite_mini=true enable_ohos_systemabilitymgr_samgr_lite_broadcast=false enable_ohos_systemabilitymgr_samgr_lite_system_capability=false config_ohos_systemabilitymgr_samgr_lite_shared_task_size=2048 enable_ohos_systemabilitymgr_samgr_lite_specified_task=false enable_ohos_systemabilitymgr_samgr_lite_no_task=false huks_use_lite_storage=true huks_use_hardware_root_key=true huks_config_file="hks_config_lite.h" bootstrap_lite_enable_bootstrap_service=false init_feature_begetctl_liteos=true init_lite_use_thirdparty_mbedtls=true utils_lite_feature_file=true use_thin_lto=false ohos_build_type="debug" device_type="default" build_variant="root" root_perf_main="main" runtime_mode="release" /root/ohos_src/out/xiaohong --script-executable=/usr/bin/python3
+[OHOS INFO] [GN] Excuting gn command: /root/ohos_src/prebuilts/build-tools/linux-x86/bin/gn gen --args="product_name=\"xiaohong\" target_cpu=\"riscv32\" target_os=\"ohos\" precise_branch=\"\" is_mini_system=true product_path=\"//vendor/atomgit/xiaohong\" product_config_path=\"/root/ohos_src/vendor/atomgit/xiaohong\" device_name=\"xiaohong\" device_path=\"//device/board/atomgit/xiaohong\" device_company=\"atomgit\" device_config_path=\"/root/ohos_src/device/board/atomgit/xiaohong/liteos_m\" ohos_kernel_type=\"liteos_m\" ohos_build_compiler_specified=\"\" ohos_build_time=1791658795855 ohos_build_datetime=\"2026-10-11 10:59:55\" hilog_lite_mini=true hievent_lite_mini=true enable_ohos_systemabilitymgr_samgr_lite_broadcast=false enable_ohos_systemabilitymgr_samgr_lite_system_capability=false config_ohos_systemabilitymgr_samgr_lite_shared_task_size=2048 enable_ohos_systemabilitymgr_samgr_lite_specified_task=false enable_ohos_systemabilitymgr_samgr_lite_no_task=false huks_use_lite_storage=true huks_use_hardware_root_key=true huks_config_file=\"hks_config_lite.h\" bootstrap_lite_enable_bootstrap_service=false init_feature_begetctl_liteos=true init_lite_use_thirdparty_mbedtls=true utils_lite_feature_file=true use_thin_lto=false ohos_build_type=\"debug\" device_type=\"default\" build_variant=\"root\" root_perf_main=\"main\" runtime_mode=\"release\"" --args=product_name="xiaohong" target_cpu="riscv32" target_os="ohos" precise_branch="" is_mini_system=true product_path="//vendor/atomgit/xiaohong" product_config_path="/root/ohos_src/vendor/atomgit/xiaohong" device_name="xiaohong" device_path="//device/board/atomgit/xiaohong" device_company="atomgit" device_config_path="/root/ohos_src/device/board/atomgit/xiaohong/liteos_m" ohos_kernel_type="liteos_m" ohos_build_compiler_specified="" ohos_build_time=1791658795855 ohos_build_datetime="2026-10-11 10:59:55" hilog_lite_mini=true hievent_lite_mini=true enable_ohos_systemabilitymgr_samgr_lite_broadcast=false enable_ohos_systemabilitymgr_samgr_lite_system_capability=false config_ohos_systemabilitymgr_samgr_lite_shared_task_size=2048 enable_ohos_systemabilitymgr_samgr_lite_specified_task=false enable_ohos_systemabilitymgr_samgr_lite_no_task=false huks_use_lite_storage=true huks_use_hardware_root_key=true huks_config_file="hks_config_lite.h" bootstrap_lite_enable_bootstrap_service=false init_feature_begetctl_liteos=true init_lite_use_thirdparty_mbedtls=true utils_lite_feature_file=true use_thin_lto=false ohos_build_type="debug" device_type="default" build_variant="root" root_perf_main="main" runtime_mode="release" /root/ohos_src/out/xiaohong --script-executable=/usr/bin/python3
 [OHOS INFO] [GN] root_out_dir=//out/xiaohong
 [OHOS INFO] [GN] root_build_dir=//out/xiaohong
 [OHOS INFO] [GN] root_gen_dir=//out/xiaohong/gen
@@ -52,7 +52,7 @@
 [OHOS INFO] [GN] ohos_kernel_type: liteos_m
 [OHOS INFO] [GN] hks_config_lite.h
 [OHOS INFO] [GN] WARNING at the command-line "--args":1:78: Build argument has no effect.
-[OHOS INFO] [GN] product_name="xiaohong" target_cpu="riscv32" target_os="ohos" precise_branch="" is_mini_system=true product_path="//vendor/atomgit/xiaohong" product_config_path="/root/ohos_src/vendor/atomgit/xiaohong" device_name="xiaohong" device_path="//device/board/atomgit/xiaohong" device_company="atomgit" device_config_path="/root/ohos_src/device/board/atomgit/xiaohong/liteos_m" ohos_kernel_type="liteos_m" ohos_build_compiler_specified="" ohos_build_time=1791653425435 ohos_build_datetime="2026-10-11 09:30:25" hilog_lite_mini=true hievent_lite_mini=true enable_ohos_systemabilitymgr_samgr_lite_broadcast=false enable_ohos_systemabilitymgr_samgr_lite_system_capability=false config_ohos_systemabilitymgr_samgr_lite_shared_task_size=2048 enable_ohos_systemabilitymgr_samgr_lite_specified_task=false enable_ohos_systemabilitymgr_samgr_lite_no_task=false huks_use_lite_storage=true huks_use_hardware_root_key=true huks_config_file="hks_config_lite.h" bootstrap_lite_enable_bootstrap_service=false init_feature_begetctl_liteos=true init_lite_use_thirdparty_mbedtls=true utils_lite_feature_file=true use_thin_lto=false ohos_build_type="debug" device_type="default" build_variant="root" root_perf_main="main" runtime_mode="release"
+[OHOS INFO] [GN] product_name="xiaohong" target_cpu="riscv32" target_os="ohos" precise_branch="" is_mini_system=true product_path="//vendor/atomgit/xiaohong" product_config_path="/root/ohos_src/vendor/atomgit/xiaohong" device_name="xiaohong" device_path="//device/board/atomgit/xiaohong" device_company="atomgit" device_config_path="/root/ohos_src/device/board/atomgit/xiaohong/liteos_m" ohos_kernel_type="liteos_m" ohos_build_compiler_specified="" ohos_build_time=1791658795855 ohos_build_datetime="2026-10-11 10:59:55" hilog_lite_mini=true hievent_lite_mini=true enable_ohos_systemabilitymgr_samgr_lite_broadcast=false enable_ohos_systemabilitymgr_samgr_lite_system_capability=false config_ohos_systemabilitymgr_samgr_lite_shared_task_size=2048 enable_ohos_systemabilitymgr_samgr_lite_specified_task=false enable_ohos_systemabilitymgr_samgr_lite_no_task=false huks_use_lite_storage=true huks_use_hardware_root_key=true huks_config_file="hks_config_lite.h" bootstrap_lite_enable_bootstrap_service=false init_feature_begetctl_liteos=true init_lite_use_thirdparty_mbedtls=true utils_lite_feature_file=true use_thin_lto=false ohos_build_type="debug" device_type="default" build_variant="root" root_perf_main="main" runtime_mode="release"
 [OHOS INFO] [GN]                                                                              ^-
 [OHOS INFO] [GN] The variable "precise_branch" was set as a build argument
 [OHOS INFO] [GN] but never appeared in a declare_args() block in any buildfile.
@@ -61,85 +61,85 @@
 [OHOS INFO] [GN] 
 [OHOS INFO] [GN] The build continued as if that argument was unspecified.
 [OHOS INFO] [GN] 
-[OHOS INFO] [GN] Done. Made 290 targets from 183 files in 821ms
-[OHOS INFO]  The run time for _gn is 0.82 s
+[OHOS INFO] [GN] Done. Made 290 targets from 183 files in 802ms
+[OHOS INFO]  The run time for _gn is 0.81 s
 
 [OHOS INFO] [NINJA] Excuting ninja command: /root/ohos_src/prebuilts/build-tools/linux-x86/bin/ninja -w dupbuild=warn -C /root/ohos_src/out/xiaohong images make_all make_test
 [OHOS INFO] [NINJA] [1/125] gcc cross compiler obj/vendor/atomgit/xiaohong/hals/utils/sys_param/libhal_sysparam.hal_sys_param.o
-[OHOS INFO] [NINJA] [2/125] AR libs/libhal_sysparam.a
-[OHOS INFO] [NINJA] [3/125] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/log/libxiaohong.log.o
-[OHOS INFO] [NINJA] [4/125] ACTION //base/startup/init/services/param/liteos:lite_ohos_param_to(//build/lite/toolchain:riscv32-linux-musl)
-[OHOS INFO] [NINJA] [5/122] gcc cross compiler obj/base/startup/init/interfaces/hals/utils/sys_param/libhal_sys_param.hal_sys_param.o
-[OHOS INFO] [NINJA] [6/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/libxiaohong.task_entry.o
-[OHOS INFO] [NINJA] [7/122] AR libs/libhal_sys_param.a
-[OHOS INFO] [NINJA] [8/122] ACTION //developtools/syscap_codec:generate_pcid(//build/lite/toolchain:riscv32-linux-musl)
-[OHOS INFO] [NINJA] [9/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/boards/xiaohong_ws63_v1/libxiaohong.board_config.o
-[OHOS INFO] [NINJA] [10/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/boards/xiaohong_ws63_v1/libxiaohong.key_config.o
-[OHOS INFO] [NINJA] [11/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/boards/xiaohong_ws63_v1/libxiaohong.w25q128.o
-[OHOS INFO] [NINJA] [12/122] gcc cross compiler obj/base/startup/init/services/param/base/libparam_client_lite.param_comm.o
-[OHOS INFO] [NINJA] [13/122] gcc cross compiler obj/base/startup/init/services/param/liteos/libparam_client_lite.param_litedac.o
-[OHOS INFO] [NINJA] [14/122] gcc cross compiler obj/base/startup/init/services/param/liteos/libparam_client_lite.param_client.o
-[OHOS INFO] [NINJA] [15/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/littlefs/libxiaohong.littlefs_adapt.o
+[OHOS INFO] [NINJA] [2/125] ACTION //base/startup/init/services/param/liteos:lite_ohos_param_to(//build/lite/toolchain:riscv32-linux-musl)
+[OHOS INFO] [NINJA] [3/122] AR libs/libhal_sysparam.a
+[OHOS INFO] [NINJA] [4/122] gcc cross compiler obj/base/startup/init/interfaces/hals/utils/sys_param/libhal_sys_param.hal_sys_param.o
+[OHOS INFO] [NINJA] [5/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/log/libxiaohong.log.o
+[OHOS INFO] [NINJA] [6/122] AR libs/libhal_sys_param.a
+[OHOS INFO] [NINJA] [7/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/libxiaohong.task_entry.o
+[OHOS INFO] [NINJA] [8/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/boards/xiaohong_ws63_v1/libxiaohong.board_config.o
+[OHOS INFO] [NINJA] [9/122] ACTION //developtools/syscap_codec:generate_pcid(//build/lite/toolchain:riscv32-linux-musl)
+[OHOS INFO] [NINJA] [10/122] gcc cross compiler obj/base/startup/init/services/param/base/libparam_client_lite.param_comm.o
+[OHOS INFO] [NINJA] [11/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/boards/xiaohong_ws63_v1/libxiaohong.key_config.o
+[OHOS INFO] [NINJA] [12/122] gcc cross compiler obj/base/startup/init/services/param/liteos/libparam_client_lite.param_litedac.o
+[OHOS INFO] [NINJA] [13/122] gcc cross compiler obj/base/startup/init/services/param/liteos/libparam_client_lite.param_client.o
+[OHOS INFO] [NINJA] [14/122] gcc cross compiler obj/base/startup/init/services/param/manager/libparam_client_lite.param_persist.o
+[OHOS INFO] [NINJA] [15/122] gcc cross compiler obj/base/startup/init/services/utils/libparam_client_lite.list.o
 [OHOS INFO] [NINJA] [16/122] gcc cross compiler obj/base/startup/init/services/param/liteos/libparam_client_lite.param_osadp.o
-[OHOS INFO] [NINJA] [17/122] gcc cross compiler obj/base/startup/init/services/utils/libparam_client_lite.init_hashmap.o
-[OHOS INFO] [NINJA] [18/122] gcc cross compiler obj/base/startup/init/services/log/libparam_client_lite.init_commlog.o
-[OHOS INFO] [NINJA] [19/122] gcc cross compiler obj/base/startup/init/services/param/base/libparam_client_lite.param_base.o
-[OHOS INFO] [NINJA] [20/122] gcc cross compiler obj/base/startup/init/services/param/base/libparam_client_lite.param_trie.o
-[OHOS INFO] [NINJA] [21/122] gcc cross compiler obj/base/startup/init/services/utils/libparam_client_lite.list.o
-[OHOS INFO] [NINJA] [22/122] STAMP obj/developtools/syscap_codec/generate_pcid.stamp
-[OHOS INFO] [NINJA] [23/122] gcc cross compiler obj/base/startup/init/services/param/manager/libparam_client_lite.param_persist.o
-[OHOS INFO] [NINJA] [24/122] COPY pcid.sc obj/developtools/syscap_codec/out/xiaohong/pcid.sc
-[OHOS INFO] [NINJA] [25/122] gcc cross compiler obj/base/startup/init/services/param/liteos/libparam_client_lite.param_service.o
-[OHOS INFO] [NINJA] [26/122] STAMP obj/developtools/syscap_codec/pcid.sc.stamp
-[OHOS INFO] [NINJA] [27/122] STAMP obj/developtools/syscap_codec/pcid_sc.stamp
-[OHOS INFO] [NINJA] [28/122] STAMP obj/developtools/syscap_codec/syscap_codec.stamp
-[OHOS INFO] [NINJA] [29/122] gcc cross compiler obj/base/startup/init/services/param/liteos/libparam_client_lite.param_hal.o
-[OHOS INFO] [NINJA] [30/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/display/lcd_st7789/libxiaohong.lcd_st7789_driver.o
-[OHOS INFO] [NINJA] [31/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/libxiaohong.settings.o
-[OHOS INFO] [NINJA] [32/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/display/libxiaohong.disp_driver.o
-[OHOS INFO] [NINJA] [33/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/libxiaohong.main.o
-[OHOS INFO] [NINJA] [34/122] gcc cross compiler obj/base/startup/init/services/param/manager/libparam_client_lite.param_server.o
-[OHOS INFO] [NINJA] [35/122] gcc cross compiler obj/base/startup/init/services/param/manager/libparam_client_lite.param_manager.o
+[OHOS INFO] [NINJA] [17/122] gcc cross compiler obj/base/startup/init/services/param/base/libparam_client_lite.param_base.o
+[OHOS INFO] [NINJA] [18/122] gcc cross compiler obj/base/startup/init/services/utils/libparam_client_lite.init_hashmap.o
+[OHOS INFO] [NINJA] [19/122] gcc cross compiler obj/base/startup/init/services/log/libparam_client_lite.init_commlog.o
+[OHOS INFO] [NINJA] [20/122] STAMP obj/developtools/syscap_codec/generate_pcid.stamp
+[OHOS INFO] [NINJA] [21/122] gcc cross compiler obj/base/startup/init/services/param/base/libparam_client_lite.param_trie.o
+[OHOS INFO] [NINJA] [22/122] COPY pcid.sc obj/developtools/syscap_codec/out/xiaohong/pcid.sc
+[OHOS INFO] [NINJA] [23/122] STAMP obj/developtools/syscap_codec/pcid.sc.stamp
+[OHOS INFO] [NINJA] [24/122] gcc cross compiler obj/base/startup/init/services/param/liteos/libparam_client_lite.param_hal.o
+[OHOS INFO] [NINJA] [25/122] STAMP obj/developtools/syscap_codec/pcid_sc.stamp
+[OHOS INFO] [NINJA] [26/122] STAMP obj/developtools/syscap_codec/syscap_codec.stamp
+[OHOS INFO] [NINJA] [27/122] gcc cross compiler obj/base/startup/init/services/param/liteos/libparam_client_lite.param_service.o
+[OHOS INFO] [NINJA] [28/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/display/lcd_st7789/libxiaohong.lcd_st7789_driver.o
+[OHOS INFO] [NINJA] [29/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/libxiaohong.settings.o
+[OHOS INFO] [NINJA] [30/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/boards/xiaohong_ws63_v1/libxiaohong.w25q128.o
+[OHOS INFO] [NINJA] [31/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/littlefs/libxiaohong.littlefs_adapt.o
+[OHOS INFO] [NINJA] [32/122] gcc cross compiler obj/base/startup/init/services/param/manager/libparam_client_lite.param_server.o
+[OHOS INFO] [NINJA] [33/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/display/libxiaohong.disp_driver.o
+[OHOS INFO] [NINJA] [34/122] gcc cross compiler obj/base/startup/init/services/param/manager/libparam_client_lite.param_manager.o
+[OHOS INFO] [NINJA] [35/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/libxiaohong.main.o
 [OHOS INFO] [NINJA] [36/122] AR libs/libparam_client_lite.a
 [OHOS INFO] [NINJA] [37/122] STAMP obj/build/lite/ohos.stamp
 [OHOS INFO] [NINJA] [38/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/display/lvgl/libxiaohong.lv_fs_lfs_adapt.o
 [OHOS INFO] [NINJA] [39/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/display/lvgl/libxiaohong.lv_font_FontAwesom5_18.o
-[OHOS INFO] [NINJA] [40/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/apps/libxiaohong.app_installer.o
+[OHOS INFO] [NINJA] [40/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/display/lvgl/libxiaohong.lv_font_SourceHanSerifCN_SemiBold_22_Default.o
 [OHOS INFO] [NINJA] [41/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/display/lvgl/libxiaohong.lv_font_lfs_binfont.o
-[OHOS INFO] [NINJA] [42/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/display/libxiaohong.lvgl_task.o
-[OHOS INFO] [NINJA] [43/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/display/libxiaohong.lvgl_ui_layout.o
-[OHOS INFO] [NINJA] [44/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/display/lvgl/libxiaohong.lv_font_SourceHanSerifCN_SemiBold_22_Default.o
-[OHOS INFO] [NINJA] [45/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/apps/libxiaohong.app_registry.o
-[OHOS INFO] [NINJA] [46/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/display/lvgl/libxiaohong.lv_font_segui_emoji_68.o
-[OHOS INFO] [NINJA] [47/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/display/lvgl/libxiaohong.lv_font_stream_bin.o
+[OHOS INFO] [NINJA] [42/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/apps/libxiaohong.app_installer.o
+[OHOS INFO] [NINJA] [43/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/display/libxiaohong.lvgl_task.o
+[OHOS INFO] [NINJA] [44/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/display/lvgl/libxiaohong.lv_font_segui_emoji_68.o
+[OHOS INFO] [NINJA] [45/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/display/lvgl/libxiaohong.lv_font_stream_bin.o
+[OHOS INFO] [NINJA] [46/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/display/libxiaohong.lvgl_ui_layout.o
+[OHOS INFO] [NINJA] [47/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/apps/libxiaohong.app_registry.o
 [OHOS INFO] [NINJA] [48/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/apps/libxiaohong.app_hub.o
-[OHOS INFO] [NINJA] [49/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/network/libxiaohong.net_wifi_hotspot.o
+[OHOS INFO] [NINJA] [49/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/apps/breakout/libxiaohong.breakout_game.o
 [OHOS INFO] [NINJA] [50/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/apps/tetris/libxiaohong.tetris_game.o
-[OHOS INFO] [NINJA] [51/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/apps/breakout/libxiaohong.breakout_game.o
-[OHOS INFO] [NINJA] [52/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/network/libxiaohong.net_wifi_station.o
-[OHOS INFO] [NINJA] [53/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/network/libxiaohong.net_http_server.o
-[OHOS INFO] [NINJA] [54/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/network/libxiaohong.net_wifi_recfg_task.o
-[OHOS INFO] [NINJA] [55/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/apps/liquid_duck/libxiaohong.liquid_duck.o
-[OHOS INFO] [NINJA] [56/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/audio/ci1302/libxiaohong.ci1302_uart_ring.o
-[OHOS INFO] [NINJA] [57/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/audio/ci1302/libxiaohong.ci1302_opus_uplink.o
+[OHOS INFO] [NINJA] [51/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/apps/liquid_duck/libxiaohong.liquid_duck.o
+[OHOS INFO] [NINJA] [52/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/network/libxiaohong.net_http_server.o
+[OHOS INFO] [NINJA] [53/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/network/libxiaohong.net_wifi_hotspot.o
+[OHOS INFO] [NINJA] [54/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/network/libxiaohong.http_lfs_download.o
+[OHOS INFO] [NINJA] [55/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/audio/ci1302/libxiaohong.ci1302_uart_ring.o
+[OHOS INFO] [NINJA] [56/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/network/libxiaohong.net_wifi_recfg_task.o
+[OHOS INFO] [NINJA] [57/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/apps/snake/libxiaohong.snake_game.o
 [OHOS INFO] [NINJA] [58/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/network/libxiaohong.net_wifi_task.o
-[OHOS INFO] [NINJA] [59/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/audio/ci1302/libxiaohong.ci1302_opus_decode.o
+[OHOS INFO] [NINJA] [59/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/audio/ci1302/libxiaohong.ci1302_opus_uplink.o
 [OHOS INFO] [NINJA] [60/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/audio/ci1302/libxiaohong.ci1302_audio_listen_task.o
-[OHOS INFO] [NINJA] [61/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/network/libxiaohong.http_lfs_download.o
-[OHOS INFO] [NINJA] [62/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/audio/ci1302/libxiaohong.ci1302_data_process.o
-[OHOS INFO] [NINJA] [63/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/apps/snake/libxiaohong.snake_game.o
-[OHOS INFO] [NINJA] [64/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/audio/ci1302/libxiaohong.ci1302_tts_downlink.o
-[OHOS INFO] [NINJA] [65/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/protocols/libxiaohong.protocol.o
-[OHOS INFO] [NINJA] [66/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/audio/ci1302/libxiaohong.ci1302_audio_play_task.o
-[OHOS INFO] [NINJA] [67/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/protocols/mongoose/libxiaohong.mongoose_port_random.o
+[OHOS INFO] [NINJA] [61/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/network/libxiaohong.net_wifi_station.o
+[OHOS INFO] [NINJA] [62/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/audio/ci1302/libxiaohong.ci1302_audio_play_task.o
+[OHOS INFO] [NINJA] [63/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/audio/ci1302/libxiaohong.ci1302_opus_decode.o
+[OHOS INFO] [NINJA] [64/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/audio/ci1302/libxiaohong.ci1302_data_process.o
+[OHOS INFO] [NINJA] [65/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/audio/ci1302/libxiaohong.ci1302_tts_downlink.o
+[OHOS INFO] [NINJA] [66/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/protocols/mongoose/libxiaohong.mongoose_port_random.o
+[OHOS INFO] [NINJA] [67/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/protocols/libxiaohong.xh_tls.o
 [OHOS INFO] [NINJA] [68/122] STAMP obj/out/xiaohong/build_configs/developtools/syscap_codec/syscap_codec_info.stamp
-[OHOS INFO] [NINJA] [69/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/protocols/libxiaohong.xh_tls.o
-[OHOS INFO] [NINJA] [70/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/agent/libxiaohong.agent_task.o
-[OHOS INFO] [NINJA] [71/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/protocols/libxiaohong.mongoose_protocol.o
-[OHOS INFO] [NINJA] [72/122] ACTION //out/xiaohong/build_configs/developtools/syscap_codec:syscap_codec(//build/lite/toolchain:riscv32-linux-musl)
-[OHOS INFO] [NINJA] [73/122] STAMP obj/out/xiaohong/build_configs/developtools/syscap_codec/syscap_codec.stamp
-[OHOS INFO] [NINJA] [74/122] STAMP obj/out/xiaohong/build_configs/developtools/syscap_codec/syscap_codec_test.stamp
-[OHOS INFO] [NINJA] [75/122] STAMP obj/out/xiaohong/build_configs/parts_test.stamp
+[OHOS INFO] [NINJA] [69/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/protocols/libxiaohong.protocol.o
+[OHOS INFO] [NINJA] [70/122] ACTION //out/xiaohong/build_configs/developtools/syscap_codec:syscap_codec(//build/lite/toolchain:riscv32-linux-musl)
+[OHOS INFO] [NINJA] [71/122] STAMP obj/out/xiaohong/build_configs/developtools/syscap_codec/syscap_codec.stamp
+[OHOS INFO] [NINJA] [72/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/protocols/libxiaohong.mongoose_protocol.o
+[OHOS INFO] [NINJA] [73/122] STAMP obj/out/xiaohong/build_configs/developtools/syscap_codec/syscap_codec_test.stamp
+[OHOS INFO] [NINJA] [74/122] STAMP obj/out/xiaohong/build_configs/parts_test.stamp
+[OHOS INFO] [NINJA] [75/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/agent/libxiaohong.agent_task.o
 [OHOS INFO] [NINJA] [76/122] STAMP obj/build/ohos/packages/build_all_test_pkg.stamp
 [OHOS INFO] [NINJA] [77/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/ota/libxiaohong.font_download.o
 [OHOS INFO] [NINJA] [78/122] gcc cross compiler obj/vendor/atomgit/xiaohong/xiaohong/src/ota/libxiaohong.ota.o
@@ -161,8 +161,8 @@
 [OHOS INFO] [NINJA] [94/117] ACTION //build/ohos/packages:phone_parts_list(//build/lite/toolchain:riscv32-linux-musl)
 [OHOS INFO] [NINJA] [95/117] STAMP obj/build/ohos/packages/phone_parts_list.stamp
 [OHOS INFO] [NINJA] [96/117] ACTION //build/ohos/packages:package_testcase_phone(//build/lite/toolchain:riscv32-linux-musl)
-[OHOS INFO] [NINJA] [97/117] ACTION //build/ohos/packages:package_testcase_mlf_phone(//build/lite/toolchain:riscv32-linux-musl)
-[OHOS INFO] [NINJA] [98/117] STAMP obj/build/ohos/packages/package_testcase_phone.stamp
+[OHOS INFO] [NINJA] [97/117] STAMP obj/build/ohos/packages/package_testcase_phone.stamp
+[OHOS INFO] [NINJA] [98/117] ACTION //build/ohos/packages:package_testcase_mlf_phone(//build/lite/toolchain:riscv32-linux-musl)
 [OHOS INFO] [NINJA] [99/117] STAMP obj/build/ohos/packages/package_testcase_mlf_phone.stamp
 [OHOS INFO] [NINJA] [100/117] STAMP obj/build/ohos/packages/package_testcase_mlf.stamp
 [OHOS INFO] [NINJA] [101/117] ACTION //build/ohos/packages:collect_notice_files__phone(//build/lite/toolchain:riscv32-linux-musl)
@@ -176,7 +176,7 @@
 [OHOS INFO] [NINJA] [109/114] STAMP obj/build/ohos/packages/package_testcase.stamp
 [OHOS INFO] [NINJA] [110/114] STAMP obj/build/core/gn/make_test.stamp
 [OHOS INFO] [NINJA] [111/114] ACTION //build/ohos/packages:packer(//build/lite/toolchain:riscv32-linux-musl)
-[OHOS INFO]  The run time for _ninja is 50.91 s
+[OHOS INFO]  The run time for _ninja is 50.8 s
 [93m[OHOS WARNING][0m  Failed to find ccache, ccache disabled.
 [OHOS INFO] [POSTBUILD] unrecognized ninja log format, we need # ninja log v5
 [OHOS INFO] [POSTBUILD] 
@@ -185,10 +185,10 @@
 [OHOS INFO] [POSTBUILD] commonlibrary   	       1	0.3%	       1	0.3%	1.00
 [OHOS INFO] [POSTBUILD] developtools    	       6	1.6%	       6	1.6%	1.00
 [OHOS INFO] [POSTBUILD] hiviewdfx       	      12	3.1%	      12	3.1%	1.00
-[OHOS INFO] [POSTBUILD] security        	     113	29.5%	     113	29.5%	1.00
+[OHOS INFO] [POSTBUILD] security        	     113	29.6%	     113	29.6%	1.00
 [OHOS INFO] [POSTBUILD] startup         	      25	6.5%	      25	6.5%	1.00
 [OHOS INFO] [POSTBUILD] systemabilitymgr	      12	3.1%	      12	3.1%	1.00
-[OHOS INFO] [POSTBUILD] thirdparty      	     144	37.6%	     144	37.6%	1.00
+[OHOS INFO] [POSTBUILD] thirdparty      	     144	37.7%	     144	37.7%	1.00
 [OHOS INFO] [POSTBUILD] updater         	       4	1.0%	       4	1.0%	1.00
 [OHOS INFO] [POSTBUILD] 
 [OHOS INFO] [POSTBUILD] c overall build overlap rate: 1.00
