@@ -115,6 +115,7 @@ static_library("xiaohong") {
     # app hub and games
     sources += [
       "src/apps/app_hub.c",
+      "src/apps/app_hub_icons.c",
       "src/apps/app_registry.c",
       "src/apps/app_installer.c",
       "src/apps/snake/snake_game.c",
