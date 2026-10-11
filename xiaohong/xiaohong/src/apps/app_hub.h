@@ -45,7 +45,10 @@ SOFTWARE.
  *   Wakeup 长按 → 返回/退出
  *
  * 进入应用大厅：
- *   VolDw 长按 → 从 AI 模式进入应用大厅
+ *   VolUp + VolDw 同时长按是设备硬件复位，严禁复用为 App Hub 入口。
+ *   当前暂不映射物理键进入大厅，直到确定无冲突的单独手势。
+ *   eDisp_AppHub_Open 保留供显示任务中的明确软件入口使用。
+ *   单独长按 VolUp / VolDw 保持原有亮度调节功能
  */
 
 /* 应用按键事件（由 app_hub 转发给各应用） */
@@ -72,6 +75,8 @@ typedef struct {
     const char *name;          /* 显示名称（UTF-8） */
     const char *icon;          /* 图标符号（LV_SYMBOL 或 emoji） */
     bool available;            /* 是否已实现（false = 占位/敬请期待） */
+    bool system_app;           /* resident OS app, cannot be uninstalled */
+    bool default_app;          /* startup AI frontend, not new agent task */
 
     /*
      * on_create: 创建应用 UI，传入父容器（app_hub 提供的 lv_obj_t）

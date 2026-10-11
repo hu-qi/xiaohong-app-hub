@@ -102,8 +102,18 @@ static void wakeup_key_event_cb(pin_t pin, uintptr_t param)
             log_info("[KeyConfg] WakupKey LongPress:   [%d]\r\n", eKey_Wakeup_LongPressed);
             send_key_event(eKey_Wakeup_LongPressed);
         } else {
-            log_info("[KeyConfg] WakupKey ShortPress:  [%d]\r\n", eKey_Wakeup_ShortPressed);
-            send_key_event(eKey_Wakeup_ShortPressed);
+            /* Wakeup double-click: two short presses within 400ms = toggle App Hub */
+            static uint32_t last_wakeup_short_ms = 0;
+            uint32_t now_ms = uapi_tcxo_get_ms();
+            if (last_wakeup_short_ms != 0 && (now_ms - last_wakeup_short_ms) < 400U) {
+                log_info("[KeyConfg] WakupKey DoubleClick: [%d]\r\n", eKey_AppHub_Toggle);
+                send_key_event(eKey_AppHub_Toggle);
+                last_wakeup_short_ms = 0;
+            } else {
+                log_info("[KeyConfg] WakupKey ShortPress:  [%d]\r\n", eKey_Wakeup_ShortPressed);
+                send_key_event(eKey_Wakeup_ShortPressed);
+                last_wakeup_short_ms = now_ms;
+            }
         }
         g_key_wakeup_time_begin = 0;
       }

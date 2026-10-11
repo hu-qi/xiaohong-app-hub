@@ -35,6 +35,7 @@ enum {
     eKey_Wakeup_ShortPressed,
     eKey_Wakeup_LongPressed,
     eKey_Wakeup_LongPressed_5S,
+    eKey_AppHub_Toggle, /* Wakeup double-click (two short presses within 400ms) */
     eKey_MaxCount,
 };
 
