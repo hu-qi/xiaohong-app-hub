@@ -213,7 +213,13 @@ void MainTask(void)
                 break;
             }
             case eKey_AppHub_Toggle: {
-                /* The LVGL task owns the Hub state and screen transition. */
+                /* Provisioning owns the screen until Wi-Fi setup and reboot
+                 * finish. The chord must not obscure the Wi-Fi pairing UI. */
+                if (reconfig_wifi || get_wifi_status() == eWifi_St_ReConfiguring) {
+                    log_info("[MainTask] App Hub blocked during Wi-Fi provisioning\r\n");
+                    break;
+                }
+                /* Only LvglTask may create/destroy app screens. */
                 #if defined(SUPPORT_LVGL)
                 msg_send = eDisp_AppHub_Toggle;
                 osMessageQueuePut(g_disp_event_qid, (const void *) &msg_send, 0, 0);
