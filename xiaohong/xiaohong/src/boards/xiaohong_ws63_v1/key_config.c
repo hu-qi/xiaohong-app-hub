@@ -26,6 +26,7 @@ SOFTWARE.
 #include "key_config.h"
 #include "volume_chord.h"
 #include "log.h"
+#include <stddef.h>
 
 
 static key_event_callback_t send_key_event_cb = NULL;
