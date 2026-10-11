@@ -12,21 +12,7 @@
 static uint8_t frame[240 * 240 * 2];
 static uint8_t render_buf[240 * 240 * 2];
 
-/* Keep this test independent of board startup/network functions. */
-static bool create_game(lv_obj_t *screen) {
-    lv_obj_t *label = lv_label_create(screen);
-    lv_label_set_text(label, "Snake started");
-    return true;
-}
-static void destroy_game(void) {}
-static void key_game(uint8_t key) { (void)key; }
-static void tick_game(void) {}
-/* Snake is already exercised by the separate App Hub host lifecycle test.
- * Link actual Tetris/Breakout/LiquidDuck code for native LVGL smoke tests. */
-bool snake_game_create(lv_obj_t *screen) {return create_game(screen);}
-void snake_game_destroy(void) {destroy_game();}
-void snake_game_on_key(uint8_t key) {key_game(key);}
-void snake_game_on_tick(void) {tick_game();}
+/* Real LVGL 9 integration test: link actual registry and all four games. */
 void xh_app_installer_init(void) {}
 
 static void flush_cb(lv_display_t *display, const lv_area_t *area, uint8_t *px) {
