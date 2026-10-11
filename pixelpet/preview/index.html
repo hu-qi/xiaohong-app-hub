@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>XiaoHong PixelPet · CodeArts Preview</title>
+<style>
+  * { box-sizing:border-box; }
+  body { background:#0d1627; color:#eaf4fe; margin:0; padding:24px 12px;
+         font-family:system-ui,-apple-system,sans-serif; display:flex;
+         align-items:center; flex-direction:column; gap:14px; }
+  h1 { font-size:18px; margin:0; font-weight:650; }
+  p { font-size:12px; max-width:410px; margin:0; text-align:center; color:#a3b6ce; }
+  canvas { width:240px; height:240px; image-rendering:pixelated;
+           border:1px solid #31415b; border-radius:14px; background:#0b1424; }
+  .auth { display:flex; gap:6px; max-width:390px; width:100%; }
+  input { flex:1; min-width:0; padding:10px; font:inherit; color:#fff;
+          border:1px solid #31415b; border-radius:8px; background:#18283f; }
+  button { border:0; border-radius:8px; padding:10px 14px; background:#3667d4;
+           color:white; cursor:pointer; }
+  .notice { color:#b7c6d8; font-size:12px; }
+  code { color:#d8e3fa; }
+</style>
+</head>
+<body>
+<h1>PixelPet · Vibe Coding</h1>
+<p>本机开发预览（240×240），不是 WS63 实机画面。仅展示 CodeArts 开发状态，不显示代码或 Prompt。</p>
+<canvas width="240" height="240" id="pet" aria-label="CodeArts pixel pet"></canvas>
+<div class="auth">
+  <input id="token" type="password" placeholder="PIXELPET_PET_TOKEN" autocomplete="off">
+  <button id="connect" type="button">连接</button>
+</div>
+<div id="info" class="notice">未连接 · 等待配对令牌</div>
+<p>执行 <code>node scripts/demo.mjs</code> 或触发真实 CodeArts Hooks 查看变化。</p>
+<script>
+"use strict";
+const canvas = document.getElementById("pet");
+const ctx = canvas.getContext("2d", { alpha:false });
+const info = document.getElementById("info");
+const token = document.getElementById("token");
+const stateNames = Object.freeze({
+  offline:"离线休眠", idle:"待机", thinking:"思考中",
+  coding:"努力写代码", running:"执行工具", waiting_approval:"等待确认",
+  error:"出错了", disconnected:"连接中断"
+});
+const accent = Object.freeze({
+  offline:"#586474",idle:"#67c6ce",thinking:"#a8c8ff",coding:"#67d4b2",
+  running:"#ffd374",waiting_approval:"#e1b6ff",error:"#ff868a",
+  disconnected:"#717f94"
+});
+const pixelSprite = [
+ "..BBBBBBBB..", ".BBBBBBBBBB.", "BBBRBBBBRBBB", "BBBRBBBBRBBB",
+ "BBBBBBBBBBBB", "BBKKBBBBKKBB", "BBKKBBBBKKBB", "BBBBWWBBBBBB",
+ ".BBBBWWBBBB.", "..BBBBBBBB..", "...BB..BB...", "..BB....BB.."
+];
+let mode = "disconnected";
+let source = "none";
+let frame = 0;
+let lastSeq = 0;
+function petSprite(x, y, size, color, blink) {
+  const palette = { B:color, R:"#f8c4be", K:"#15313b", W:"#ecf3fa" };
+  for(let row=0;row<pixelSprite.length;row++) {
+    for(let col=0;col<pixelSprite[row].length;col++) {
+      let c = pixelSprite[row][col];
+      if (blink && c==="K") c="B";
+      if(c === ".") continue;
+      ctx.fillStyle = palette[c];
+      ctx.fillRect(x+col*size,y+row*size,size,size);
+    }
+  }
+}
+function draw() {
+  frame++;
+  const active = mode==="coding"||mode==="running";
+  const bounce = active ? Math.sin(frame*.22)*3 : Math.sin(frame*.055)*2;
+  const blink = (frame%130)>121 && mode!=="error";
+  ctx.fillStyle="#0b1424"; ctx.fillRect(0,0,240,240);
+  ctx.textAlign="left";ctx.font="bold 13px sans-serif";ctx.fillStyle="#f1f5fa";
+  ctx.fillText("PixelPet",12,23);
+  ctx.textAlign="right";ctx.font="10px sans-serif";ctx.fillStyle="#8fa3bd";
+  ctx.fillText(source.replace("codearts-","").toUpperCase(),229,22);
+  ctx.fillStyle="#1b304a";ctx.fillRect(44,45,152,134);
+  ctx.fillStyle="#243b56";ctx.fillRect(61,166,120,3);
+  petSprite(72,Math.round(68+bounce),8,accent[mode]||accent.idle,blink);
+  ctx.fillStyle="#eff6ff";ctx.font="bold 15px sans-serif";ctx.textAlign="center";
+  ctx.fillText(stateNames[mode]||mode,120,202);
+  ctx.font="10px sans-serif";ctx.fillStyle="#91a8c2";
+  ctx.fillText(mode==="coding"?"⌨ coding":mode==="waiting_approval"?"! approval":
+               mode==="thinking"?"...":mode==="error"?"! error":
+               mode==="running"?"⚙ running":"CodeArts",120,223);
+  requestAnimationFrame(draw);
+}
+async function poll() {
+  const secret = token.value.trim();
+  if (!secret) return;
+  try {
+    const reply = await fetch("/v1/state",{
+      headers:{"Authorization":"Bearer "+secret},
+      cache:"no-store",
+      signal:AbortSignal.timeout(1200)
+    });
+    if(!reply.ok) throw new Error(reply.status===401?"配对令牌错误":"HTTP "+reply.status);
+    const msg = await reply.json();
+    if (msg.schema!==1 || typeof msg.state!=="string") throw new Error("协议不匹配");
+    mode=Object.hasOwn(stateNames,msg.state)?msg.state:"offline";
+    source=msg.source;
+    lastSeq=msg.seq;
+    info.textContent="状态："+stateNames[mode]+" · 事件序号："+lastSeq;
+  } catch(e) {
+    mode="disconnected";
+    info.textContent="状态：连接中断 / "+e.message;
+  }
+}
+document.getElementById("connect").addEventListener("click",()=>{
+  poll();
+});
+setInterval(()=>{if(token.value.trim())poll();},1200);
+draw();
+</script>
+</body>
+</html>
