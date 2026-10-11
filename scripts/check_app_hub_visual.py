@@ -62,4 +62,20 @@ check("volume_chord.c" not in build and "volume_chord" not in driver,
 check("eKey_Wakeup_LongPressed_5S" in main and
       "increase_blk_level();" in main and "decrease_blk_level();" in main,
       "preserve original M 5s Wi-Fi setup and brightness controls")
+tap_h = (root / "xiaohong/xiaohong/xiaohong/src/m_double_tap.h").read_text()
+tap_c = (root / "xiaohong/xiaohong/xiaohong/src/m_double_tap.c").read_text()
+disp_header = (root / "xiaohong/xiaohong/xiaohong/src/display/disp_driver.h").read_text()
+check('"src/m_double_tap.c"' in build and
+      "XH_M_DOUBLE_TAP_WINDOW_MS 350U" in tap_h,
+      "double M is built in the actual WS63 GN target")
+check("xh_m_double_tap_short(&m_tap" in main and
+      "xh_m_double_tap_poll(&m_tap" in main and
+      "dispatch_m_single();" in main,
+      "single M is deferred but never dropped on an idle queue")
+check("eDisp_AppHub_DoubleM" in main + disp + disp_header and
+      "xh_app_hub_handle_key(eKey_Wakeup_LongPressed)" in disp,
+      "double M switches AI, Hub, and games through LVGL task")
+check("volume_chord" not in tap_c and
+      "eKey_AppHub_Toggle" not in main,
+      "M double tap is independent of hardware +/- RESET")
 print("Source checks passed. Actual WS63 build and device testing are still pending.")
