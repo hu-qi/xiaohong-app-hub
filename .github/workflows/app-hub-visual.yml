@@ -35,6 +35,28 @@ jobs:
           cp xiaohong/xiaohong/BUILD.gn "$temp/vendor/atomgit/xiaohong/xiaohong/BUILD.gn"
           bash scripts/ws63-build-handoff.sh --check "$temp"
           test ! -e "$temp/out"
+      - name: Simulate WS63 source backup and package provenance (NOT a real cross-build)
+        run: |
+          temp="$(mktemp -d)"
+          trap 'rm -rf "$temp"' EXIT
+          mkdir -p "$temp/.repo" "$temp/vendor/atomgit/xiaohong/xiaohong"
+          printf 'ORIGINAL SDK BUILD FILE\n' > "$temp/vendor/atomgit/xiaohong/xiaohong/BUILD.gn"
+          bash scripts/ws63-build-handoff.sh --stage "$temp"
+          test "$(cat "$temp/out/xiaohong/pr2-handoff/$(git rev-parse HEAD)/backup/xiaohong/BUILD.gn")" = "ORIGINAL SDK BUILD FILE"
+          cmp xiaohong/xiaohong/BUILD.gn "$temp/vendor/atomgit/xiaohong/xiaohong/BUILD.gn"
+          mkdir -p "$temp/bin"
+          cat > "$temp/bin/hb" <<'EOF'
+          #!/usr/bin/env bash
+          if [[ "$1" == "build" && "$2" == "-f" ]]; then
+            mkdir -p out/xiaohong/xiaohong/ws63-liteos-app
+            printf 'MOCK_TEST_ONLY_NOT_FLASHABLE' > out/xiaohong/xiaohong/ws63-liteos-app/ws63-liteos-app_all.fwpkg
+          fi
+          EOF
+          chmod +x "$temp/bin/hb"
+          PATH="$temp/bin:$PATH" bash scripts/ws63-build-handoff.sh --build "$temp"
+          test -s "$temp/out/xiaohong/pr2-handoff/$(git rev-parse HEAD)/firmware.sha256"
+          grep -q "source_sha=$(git rev-parse HEAD)" "$temp/out/xiaohong/pr2-handoff/$(git rev-parse HEAD)/provenance.txt"
+          ! bash scripts/ws63-build-handoff.sh --stage "$temp"
       - name: Compile native App Hub C tests
         run: |
           cc -std=c11 -Wall -Wextra -Werror -pedantic \
