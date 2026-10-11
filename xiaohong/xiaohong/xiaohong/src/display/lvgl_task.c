@@ -368,6 +368,16 @@ void disp_update_ui(uint8_t cmd)
         xh_app_hub_close();
         return;
     }
+    if (cmd == eDisp_AppHub_DoubleM) {
+        if (!xh_app_hub_is_active()) {
+            xh_app_hub_open();
+        } else {
+            /* When playing, return to the Hub list; when browsing, go to AI.
+             * Same mode-specific semantics as the existing M long action. */
+            xh_app_hub_handle_key(eKey_Wakeup_LongPressed);
+        }
+        return;
+    }
     if (cmd == eDisp_AppHub_Tick) {
         xh_app_hub_tick();
         return;
