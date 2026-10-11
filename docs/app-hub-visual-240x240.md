@@ -10,7 +10,7 @@ This branch is for the first-generation WS63 XiaoHong **1.54-inch, 240 × 240 pi
 | Title | 12,15 / 75px label | "App Hub" |
 | Index | 199,18 / 32px label | Dynamic "1 / 4" |
 | Icon tile | 82,47 / 76×76px | #19453E, radius 13px |
-| Snake icon | 104,69 / 32×32px | Built-in RGB565 in firmware, no emoji font |
+| Application icon | 82,47 / 76×76px tile | 14 reusable LVGL solid geometry objects, no image decoder / emoji font |
 | App name | 0,136 / 240px label | Centered |
 | Status | approx y174 | Green Built-in "Installed" or gray "Coming soon" |
 | Confirm | 89,202 / 62×25px | Blue #315ECA, M action |
@@ -20,7 +20,7 @@ App Hub shows **one app at a time**. This build does not support installing or u
 
 ### Font limitation
 
-The reference screenshot includes a Chinese 12px status caption and emoji-shaped snake. Current code uses small ASCII text and a 32×32 RGB565 snake icon to avoid depending on downloaded fonts. It is a close layout approximation, not a pixel-identical screenshot.
+The reference image includes compact Chinese labels and a snake icon. Current code uses small ASCII UI text and per-app LVGL primitive drawings (no RGB565 image decoder). It is a close visual approximation, not a pixel-identical screenshot. Five app entries are available, including the resident AI Assistant.
 
 ### Input and regression
 
@@ -46,3 +46,7 @@ The reference screenshot includes a Chinese 12px status caption and emoji-shaped
 ## Default system application (PR #2)
 
 AI Assistant is registered as the first **resident system app**. The App Hub now has five entries; AI Assistant is the initial focus (1/5), while Snake is the next entry (2/5). Selecting AI Assistant returns to the original AI LVGL screen, preserving existing audio and Agent tasks. The original Wi-Fi provisioning and post-provision reboot sequence remain intact; pairing mode blocks the App Hub shortcut. See [boot and default app lifecycle](ai-assistant-default-app.md).
+
+## Playable mini-games
+
+All four built-in games are now implemented and marked available. Control mappings, native LVGL test coverage and memory/heap notes: [App Hub playable games](app-hub-playable-games.md).
