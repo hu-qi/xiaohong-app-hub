@@ -96,6 +96,8 @@ static void voldw_key_event_cb(pin_t pin, uintptr_t param)
 
 static void wakeup_key_event_cb(pin_t pin, uintptr_t param)
 {
+    (void)pin;
+    (void)param;
     static uint32_t g_key_wakeup_time_begin = 0;
     if ((g_key_wakeup_time_begin == 0) && (0 == uapi_gpio_get_val(KEY_WAKEUP_PIN))) {
         g_key_wakeup_time_begin = uapi_tcxo_get_ms();
