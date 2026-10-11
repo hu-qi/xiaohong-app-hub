@@ -1,4 +1,5 @@
 #include "volume_chord.h"
+#include <stddef.h>
 
 xh_volume_event_t xh_volume_chord_edge(xh_volume_chord_t *state,
                                        xh_volume_button_t button,
