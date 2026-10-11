@@ -38,4 +38,11 @@ check(hub.index("lv_scr_load(s_orig_screen);", hub.index("void xh_app_hub_close"
 check(snake.index("if (s_snake_len >= SNAKE_MAX_LEN)", snake.index("static void snake_step")) <
       snake.index("snake_place_food();", snake.index("static void snake_step")),
       "snake full-board edge case")
+registry = (app / "app_registry.c").read_text()
+check('"AI Assistant"' in registry and '.system_app = true' in registry and
+      '.default_app = true' in registry, "AI registered as built-in default system app")
+check('app->id == XH_APP_ID_ASSISTANT' in hub and
+      "xh_app_hub_close();" in hub, "opening AI entry returns to resident screen")
+check("if (reconfig_wifi || get_wifi_status() == eWifi_St_ReConfiguring)" in main,
+      "App Hub entry blocked during first-time Wi-Fi provisioning")
 print("Source checks passed. Actual WS63 build and device testing are still pending.")
