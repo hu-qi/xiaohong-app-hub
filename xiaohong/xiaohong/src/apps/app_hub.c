@@ -7,7 +7,6 @@ Copyright (c) 2026 Shenzhen Open Source Co-Creation Technology Co., Ltd. (AtomGi
 #include "app_hub.h"
 #include "app_registry.h"
 #include "app_installer.h"
-#include "app_hub_icons.h"
 #include "lvgl_ui_layout.h"   /* DISP_WIDTH, DISP_HEIGHT, 字体声明 */
 #include "key_config.h"       /* eKey_* */
 #include "log.h"
@@ -46,8 +45,9 @@ static lv_obj_t *s_orig_screen = NULL;
 static lv_obj_t *s_app_container = NULL;
 static lv_obj_t *s_counter = NULL;
 static lv_obj_t *s_tile = NULL;
-static lv_obj_t *s_snake_image = NULL;
-static lv_obj_t *s_fallback_icon = NULL;
+/* Icons rendered as solid LVGL shapes: no external file/decoder/font dependency. */
+#define HUB_ICON_PARTS 14
+static lv_obj_t *s_icon_parts[HUB_ICON_PARTS];
 static lv_obj_t *s_app_name = NULL;
 static lv_obj_t *s_state_label = NULL;
 static lv_obj_t *s_check_ring = NULL;
@@ -79,6 +79,73 @@ static lv_obj_t *hub_label(lv_obj_t *parent, const char *value,
     return obj;
 }
 
+/* The status icons are intentionally drawn from simple opaque LVGL rectangles.
+ * On the WS63, RGB565 image descriptors may require decoder/color-format options
+ * that differ from the Linux simulator. Rectangles are always supported and
+ * use only 14 preallocated objects. Coordinates are relative to the 76px tile. */
+typedef struct { uint8_t x, y, w, h; uint8_t color; uint8_t radius; } hub_icon_part_t;
+#define P(x,y,w,h,c,r) {x,y,w,h,c,r}
+static const hub_icon_part_t s_icon_ai[] = {
+    P(17,14,42,37,0,8), P(22,23,10,10,1,5), P(44,23,10,10,1,5),
+    P(29,38,18,4,1,2), P(5,28,11,8,0,3), P(60,28,11,8,0,3),
+    P(34,4,8,10,0,3), P(36,1,4,4,2,2), P(24,53,28,5,0,2)
+};
+static const hub_icon_part_t s_icon_snake[] = {
+    P(9,18,12,12,0,6), P(15,9,15,13,0,6), P(26,8,19,12,0,6),
+    P(41,15,14,12,0,6), P(42,26,12,15,0,6), P(32,36,18,12,0,6),
+    P(20,35,16,12,0,6), P(15,45,14,11,0,5), P(25,50,21,11,0,5),
+    P(43,45,14,12,0,5), P(18,16,4,4,1,2), P(12,25,8,3,2,1)
+};
+static const hub_icon_part_t s_icon_tetris[] = {
+    P(16,14,17,17,0,3), P(33,14,17,17,0,3),
+    P(33,31,17,17,0,3), P(50,31,17,17,0,3),
+    P(12,53,17,11,1,3), P(30,53,17,11,1,3), P(48,53,17,11,1,3)
+};
+static const hub_icon_part_t s_icon_breakout[] = {
+    P(9,11,17,9,0,2), P(29,11,17,9,0,2), P(49,11,17,9,0,2),
+    P(16,23,17,9,0,2), P(36,23,17,9,0,2),
+    P(45,36,9,9,1,5), P(24,57,30,7,2,4)
+};
+static const hub_icon_part_t s_icon_duck[] = {
+    P(19,27,41,28,0,12), P(42,17,18,22,0,8),
+    P(54,28,16,8,1,3), P(52,23,5,5,2,3),
+    P(11,52,54,5,3,3), P(17,61,42,4,3,2), P(28,36,18,11,1,7)
+};
+#undef P
+
+static void hub_draw_icon(uint8_t app_id)
+{
+    const hub_icon_part_t *parts = s_icon_ai;
+    unsigned count = sizeof(s_icon_ai) / sizeof(s_icon_ai[0]);
+    switch(app_id) {
+        case XH_APP_ID_SNAKE:
+            parts=s_icon_snake; count=sizeof(s_icon_snake)/sizeof(parts[0]); break;
+        case XH_APP_ID_TETRIS:
+            parts=s_icon_tetris; count=sizeof(s_icon_tetris)/sizeof(parts[0]); break;
+        case XH_APP_ID_BREAKOUT:
+            parts=s_icon_breakout; count=sizeof(s_icon_breakout)/sizeof(parts[0]); break;
+        case XH_APP_ID_LIQUID_DUCK:
+            parts=s_icon_duck; count=sizeof(s_icon_duck)/sizeof(parts[0]); break;
+        default: break;
+    }
+    static const uint8_t rgb[4][3] = {
+        {104,211,132}, {246,203,83}, {21,40,48}, {88,183,219}
+    };
+    for (unsigned i = 0; i < HUB_ICON_PARTS; i++) {
+        if (i < count) {
+            const hub_icon_part_t *p = &parts[i];
+            lv_obj_set_pos(s_icon_parts[i],p->x,p->y);
+            lv_obj_set_size(s_icon_parts[i],p->w,p->h);
+            lv_obj_set_style_radius(s_icon_parts[i],p->radius,0);
+            lv_obj_set_style_bg_color(s_icon_parts[i],
+                lv_color_make(rgb[p->color][0],rgb[p->color][1],rgb[p->color][2]),0);
+            lv_obj_remove_flag(s_icon_parts[i],LV_OBJ_FLAG_HIDDEN);
+        } else {
+            lv_obj_add_flag(s_icon_parts[i],LV_OBJ_FLAG_HIDDEN);
+        }
+    }
+}
+
 static void hub_update_selection(void)
 {
     if (s_counter == NULL || s_apps == NULL || s_app_count == 0U) return;
@@ -98,17 +165,7 @@ static void hub_update_selection(void)
     lv_obj_set_style_bg_color(
         s_tile, built_in ? lv_color_make(25, 69, 62)
                          : lv_color_make(34, 55, 75), 0);
-    if (app->id == XH_APP_ID_SNAKE) {
-        lv_obj_remove_flag(s_snake_image, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_add_flag(s_fallback_icon, LV_OBJ_FLAG_HIDDEN);
-    } else {
-        lv_obj_add_flag(s_snake_image, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_remove_flag(s_fallback_icon, LV_OBJ_FLAG_HIDDEN);
-        lv_label_set_text(s_fallback_icon,
-                          app->id == XH_APP_ID_ASSISTANT ? "AI" :
-                          app->id == XH_APP_ID_TETRIS ? "T" :
-                          app->id == XH_APP_ID_BREAKOUT ? "B" : "D");
-    }
+    hub_draw_icon(app->id);
     if (built_in) {
         lv_obj_remove_flag(s_check_ring, LV_OBJ_FLAG_HIDDEN);
         lv_obj_remove_flag(s_check_dot, LV_OBJ_FLAG_HIDDEN);
@@ -150,12 +207,13 @@ static void hub_create_ui(void)
     lv_obj_set_style_radius(s_tile, 13, 0);
     lv_obj_clear_flag(s_tile, LV_OBJ_FLAG_SCROLLABLE);
 
-    s_snake_image = lv_image_create(s_tile);
-    lv_image_set_src(s_snake_image, &xh_app_hub_snake_icon);
-    lv_obj_set_pos(s_snake_image, 22, 22);
-    s_fallback_icon = hub_label(s_tile, "T", 0, 26, 76,
-                                hub_title_font(), lv_color_make(219, 225, 231));
-    lv_obj_add_flag(s_fallback_icon, LV_OBJ_FLAG_HIDDEN);
+    for (unsigned i = 0; i < HUB_ICON_PARTS; ++i) {
+        s_icon_parts[i] = lv_obj_create(s_tile);
+        lv_obj_set_style_bg_opa(s_icon_parts[i],LV_OPA_COVER,0);
+        lv_obj_set_style_border_width(s_icon_parts[i],0,0);
+        lv_obj_set_style_pad_all(s_icon_parts[i],0,0);
+        lv_obj_clear_flag(s_icon_parts[i],LV_OBJ_FLAG_SCROLLABLE);
+    }
 
     /* One large name and compact status, centered. */
     s_app_name = hub_label(s_hub_screen, "", 0, 136, 240,
@@ -209,7 +267,8 @@ static void hub_destroy_ui(void)
     /* Call only after activating the original AI screen. */
     if (s_hub_screen != NULL) lv_obj_del(s_hub_screen);
     s_hub_screen = NULL;
-    s_counter = s_tile = s_snake_image = s_fallback_icon = NULL;
+    s_counter = s_tile = NULL;
+    memset(s_icon_parts,0,sizeof(s_icon_parts));
     s_app_name = s_state_label = s_check_ring = s_check_dot = NULL;
     s_action_caption = NULL;
 }
