@@ -37,6 +37,7 @@ SOFTWARE.
 #include "agent_state.h"
 #if defined(SUPPORT_LVGL)
 #include "app_hub.h"
+#include "m_double_tap.h"
 #endif
 #include "ota.h"
 #include "ota_fw_upgrade.h"
@@ -66,6 +67,32 @@ uint32_t key_event_callback_cb(uint8_t event)
     return 0;
 }
 
+/* Preserve the original M short behavior, but deliver it only if a second
+ * short click does not arrive within 350ms. MainTask owns this state. */
+static void dispatch_m_single(void)
+{
+#if defined(SUPPORT_LVGL)
+    if (xh_app_hub_is_active()) {
+        uint8_t display = (uint8_t)(eDisp_AppHub_KeyBase + eKey_Wakeup_ShortPressed);
+        osMessageQueuePut(g_disp_event_qid, (const void *)&display, 0, 0);
+        return;
+    }
+#endif
+    LOS_MEM_POOL_STATUS status;
+    LOS_MemInfoGet(m_aucSysMem0, &status);
+    printf("[MainTask] system memory: used[%u][%uKB], free[%u][%uKB]\r\n",
+        status.uwTotalUsedSize, status.uwTotalUsedSize / 1024,
+        status.uwTotalFreeSize, status.uwTotalFreeSize / 1024);
+#if defined(SUPPORT_LVGL)
+    uint8_t display = eDisp_Blk_On;
+    osMessageQueuePut(g_disp_event_qid, (const void *)&display, 0, 0);
+#endif
+    uint8_t audio_event = eAud_VolInit;
+    osMessageQueuePut(g_audx_event_qid, (const void *)&audio_event, 0, 0);
+    audio_event = eAud_WakeUp;
+    osMessageQueuePut(g_audx_event_qid, (const void *)&audio_event, 0, 0);
+}
+
 extern uint32_t LvglTaskEntry(void);
 void MainTask(void)
 {
@@ -76,7 +103,9 @@ void MainTask(void)
     uint8_t msg_send = 0;
     uint8_t reconfig_wifi = 0;
     uint8_t is_downloading = 0;
-    LOS_MEM_POOL_STATUS status;
+#if defined(SUPPORT_LVGL)
+    xh_m_double_tap_t m_tap = {0};
+#endif
 
     log_set_level(DEFAULT_LOG_LEVEL);
 
@@ -137,6 +166,16 @@ void MainTask(void)
 
     while (1) {
         ret = osMessageQueueGet(g_main_event_qid, (void *)&msg_recv, NULL, 40);
+#if defined(SUPPORT_LVGL)
+        /* Every loop must expire singles, even if no new queue event arrives. */
+        const uint32_t now_ms = uapi_tcxo_get_ms();
+        if (is_downloading || reconfig_wifi ||
+            get_wifi_status() == eWifi_St_ReConfiguring) {
+            xh_m_double_tap_cancel(&m_tap);
+        } else if (xh_m_double_tap_poll(&m_tap, now_ms)) {
+            dispatch_m_single();
+        }
+#endif
         if (ret != osOK) {
             msg_recv = 0;
             continue;
@@ -149,6 +188,22 @@ void MainTask(void)
         }
 
         log_debug("[MainTask] osMessageQueueGet: msg[%d]\r\n", msg_recv);
+#if defined(SUPPORT_LVGL)
+        if (msg_recv == eKey_Wakeup_ShortPressed &&
+            !is_downloading && !reconfig_wifi &&
+            get_wifi_status() != eWifi_St_ReConfiguring) {
+            if (xh_m_double_tap_short(&m_tap, uapi_tcxo_get_ms())) {
+                /* Only the LVGL thread may switch app screens. */
+                msg_send = eDisp_AppHub_DoubleM;
+                osMessageQueuePut(g_disp_event_qid, (const void *)&msg_send, 0, 0);
+            }
+            continue;
+        }
+        if (msg_recv == eKey_Wakeup_LongPressed ||
+            msg_recv == eKey_Wakeup_LongPressed_5S) {
+            xh_m_double_tap_cancel(&m_tap);
+        }
+#endif
         /* System-critical 5s hold must remain available even in App Hub.
          * All other App Hub key events are sent to LvglTask (single LVGL owner). */
         #if defined(SUPPORT_LVGL)
@@ -212,21 +267,8 @@ void MainTask(void)
                 break;
             }
             case eKey_Wakeup_ShortPressed: {
-                LOS_MemInfoGet(m_aucSysMem0, &status);
-                printf("[MainTask] system memory: used[%u][%uKB], free[%u][%uKB]\r\n",
-                    status.uwTotalUsedSize, status.uwTotalUsedSize / 1024,
-                    status.uwTotalFreeSize, status.uwTotalFreeSize / 1024);
-
-                #if defined(SUPPORT_LVGL)
-                msg_send = eDisp_Blk_On;
-                osMessageQueuePut(g_disp_event_qid, (const void *) &msg_send, 0, 0);
-                #endif
-
-                msg_send = eAud_VolInit;
-                osMessageQueuePut(g_audx_event_qid, (const void *) &msg_send, 0, 0);
-
-                msg_send = eAud_WakeUp;
-                osMessageQueuePut(g_audx_event_qid, (const void *) &msg_send, 0, 0);
+                /* Original behavior while provisioning or without LVGL. */
+                dispatch_m_single();
                 break;
             }
             case eKey_Wakeup_LongPressed: {
