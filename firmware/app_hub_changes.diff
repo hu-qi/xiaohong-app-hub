@@ -1,183 +1,187 @@
-diff --git a/xiaohong/xiaohong/BUILD.gn b/xiaohong/xiaohong/BUILD.gn
-index 7110a83..6cc9206 100644
---- a/xiaohong/xiaohong/BUILD.gn
-+++ b/xiaohong/xiaohong/BUILD.gn
-@@ -31,7 +31,7 @@ static_library("xiaohong") {
-     "src/settings.c",
-   ]
-   defines = [
--    "FW_VERSION=0x020100",    # 固件版本: 0x010203 = 1.2.3
-+    "FW_VERSION=0x020200",    # 固件版本: 0x010203 = 1.2.3
-     "SUPPORT_DELETE_FONT=0",  # 是否支持在配网页面操作删除已有字库
-   ]
-   if (config_ohos_enable) {
-@@ -111,6 +111,24 @@ static_library("xiaohong") {
-       "src/display/lvgl",
-       "${ws63_sdk_path}/open_source/lvgl",
-     ]
-+
-+    # app hub and games
-+    sources += [
-+      "src/apps/app_hub.c",
-+      "src/apps/app_registry.c",
-+      "src/apps/app_installer.c",
-+      "src/apps/snake/snake_game.c",
-+      "src/apps/tetris/tetris_game.c",
-+      "src/apps/breakout/breakout_game.c",
-+      "src/apps/liquid_duck/liquid_duck.c",
-+    ]
-+    include_dirs += [
-+      "src/apps",
-+      "src/apps/snake",
-+      "src/apps/tetris",
-+      "src/apps/breakout",
-+      "src/apps/liquid_duck",
-+    ]
-   }
+diff --git a/xiaohong/xiaohong/src/apps/app_hub.c b/xiaohong/xiaohong/src/apps/app_hub.c
+index 0614942..e159fba 100644
+--- a/xiaohong/xiaohong/src/apps/app_hub.c
++++ b/xiaohong/xiaohong/src/apps/app_hub.c
+@@ -22,7 +22,7 @@ static const xh_app_entry_t *s_running_app = NULL;
  
-   # network
-diff --git a/xiaohong/xiaohong/src/display/disp_driver.h b/xiaohong/xiaohong/src/display/disp_driver.h
-index cacf18f..c15ad6c 100644
---- a/xiaohong/xiaohong/src/display/disp_driver.h
-+++ b/xiaohong/xiaohong/src/display/disp_driver.h
-@@ -81,6 +81,12 @@ enum {
+ /* ===== LVGL 对象 ===== */
+ static lv_obj_t *s_hub_screen = NULL;    /* 应用大厅独立屏幕 */
+-static lv_obj_t *s_hub_title  = NULL;    /* 标题 "应用大厅" */
++static lv_obj_t *s_hub_title  = NULL;    /* 标题 "App Hub" */
+ static lv_obj_t *s_hub_list   = NULL;    /* 列表容器 */
+ static lv_obj_t *s_hub_items[8] = {NULL}; /* 列表项（最多 8 个应用） */
+ static lv_obj_t *s_hub_hint   = NULL;    /* 底部提示 */
+@@ -53,7 +53,7 @@ static void hub_create_ui(void)
  
-     // debug use only
-     eDisp_Debug_Font_Delete,
-+
-+    // app hub events
-+    eDisp_AppHub_Open,
-+    eDisp_AppHub_Close,
-+    eDisp_AppHub_Tick,
-+    eDisp_AppHub_KeyBase,    /* + eKey_VolUp_ShortPressed(0) .. eKey_Wakeup_LongPressed_5S(5) */
-     eDisp_Max,
- };
- 
-diff --git a/xiaohong/xiaohong/src/display/lvgl_task.c b/xiaohong/xiaohong/src/display/lvgl_task.c
-index d71146b..f9fd75d 100644
---- a/xiaohong/xiaohong/src/display/lvgl_task.c
-+++ b/xiaohong/xiaohong/src/display/lvgl_task.c
-@@ -33,6 +33,7 @@ SOFTWARE.
- #include "agent_state.h"
- #include "lvgl.h"
- #include "lvgl_ui_layout.h"
-+#include "app_hub.h"
- #include "ota_fw_upgrade.h"
- /* lvgl_ui_layout.h：LV_FONT_DECLARE 与 ui_text_area_config 主文本默认字体一致 */
- #if defined(SUPPORT_LFS)
-@@ -126,6 +127,12 @@ void disp_flush_cb(lv_display_t *disp_drv, const lv_area_t *area, uint8_t *px_ma
-     lv_display_flush_ready(disp_drv);
- }
- 
-+static void xh_app_hub_tick_timer_cb(lv_timer_t *t)
-+{
-+    (void)t;
-+    xh_app_hub_tick();
-+}
-+
- void LvglTask(void)
- {
-     osStatus_t ret = osError;
-@@ -145,6 +152,10 @@ void LvglTask(void)
- 
-     ui_common_text_style_config();
-     disp_create_ui();
-+    xh_app_hub_init();
-+
-+    /* App Hub tick timer — 每 100ms 调用 xh_app_hub_tick() */
-+    lv_timer_create(xh_app_hub_tick_timer_cb, 100, NULL);
- 
-     disp_clear(WHITE);
-     set_blk_level(get_blk_level());
-@@ -377,6 +388,12 @@ void disp_update_ui(uint8_t cmd)
-         // eDisp_Bar_Update,     // 状态栏, 一直存在，只是内容更新，与UI布局无关
+     /* 标题栏 */
+     s_hub_title = lv_label_create(s_hub_screen);
+-    lv_label_set_text(s_hub_title, "应用大厅");
++    lv_label_set_text(s_hub_title, "App Hub");
+     lv_obj_set_pos(s_hub_title, 0, 2);
+     lv_obj_set_width(s_hub_title, DISP_WIDTH);
+     lv_obj_set_style_text_align(s_hub_title, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
+@@ -82,14 +82,14 @@ static void hub_create_ui(void)
+         if (s_apps[i].available) {
+             lv_snprintf(buf, sizeof(buf), "  %s %s", s_apps[i].icon, s_apps[i].name);
+         } else {
+-            lv_snprintf(buf, sizeof(buf), "  %s %s [敬请期待]", s_apps[i].icon, s_apps[i].name);
++            lv_snprintf(buf, sizeof(buf), "  %s %s [Soon]", s_apps[i].icon, s_apps[i].name);
+         }
+         lv_label_set_text(s_hub_items[i], buf);
      }
  
-+    /* App Hub key event routing — 从 MainTask 转发过来的按键 */
-+    if (cmd >= eDisp_AppHub_KeyBase) {
-+        xh_app_hub_handle_key(cmd - eDisp_AppHub_KeyBase);
-+        return;
-+    }
-+
-     switch (cmd) {
-         case eDisp_Blk_On:
-             set_blk_level(get_blk_level());
-@@ -619,6 +636,16 @@ void disp_update_ui(uint8_t cmd)
-             lv_label_set_text(full_txt, "\n固件升级失败\n请检查网络后重试\n或重启设备");
+     /* 底部提示 */
+     s_hub_hint = lv_label_create(s_hub_screen);
+-    lv_label_set_text(s_hub_hint, "Vol+/-选择 Wakeup确认");
++    lv_label_set_text(s_hub_hint, "Vol+/- Sel  Wake:OK");
+     lv_obj_set_pos(s_hub_hint, 0, DISP_HEIGHT - 14);
+     lv_obj_set_width(s_hub_hint, DISP_WIDTH);
+     lv_obj_set_style_text_align(s_hub_hint, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
+diff --git a/xiaohong/xiaohong/src/apps/app_registry.c b/xiaohong/xiaohong/src/apps/app_registry.c
+index a7f4ac6..6d179e4 100644
+--- a/xiaohong/xiaohong/src/apps/app_registry.c
++++ b/xiaohong/xiaohong/src/apps/app_registry.c
+@@ -19,8 +19,8 @@ Copyright (c) 2026 Shenzhen Open Source Co-Creation Technology Co., Ltd. (AtomGi
+ static const xh_app_entry_t s_app_registry[] = {
+     {
+         .id         = XH_APP_ID_SNAKE,
+-        .name       = "贪吃蛇",
+-        .icon       = LV_SYMBOL_OK,       /* 暂用内置符号，后续可换 emoji */
++        .name       = "Snake",
++        .icon       = ">",       /* 暂用内置符号，后续可换 emoji */
+         .available  = true,
+         .on_create  = snake_game_create,
+         .on_destroy = snake_game_destroy,
+@@ -29,8 +29,8 @@ static const xh_app_entry_t s_app_registry[] = {
+     },
+     {
+         .id         = XH_APP_ID_TETRIS,
+-        .name       = "俄罗斯方块",
+-        .icon       = LV_SYMBOL_CLOSE,
++        .name       = "Tetris",
++        .icon       = "x",
+         .available  = false,              /* 预留接口，尚未实现 */
+         .on_create  = tetris_game_create,
+         .on_destroy = tetris_game_destroy,
+@@ -39,8 +39,8 @@ static const xh_app_entry_t s_app_registry[] = {
+     },
+     {
+         .id         = XH_APP_ID_BREAKOUT,
+-        .name       = "打砖块",
+-        .icon       = LV_SYMBOL_BATTERY_2,
++        .name       = "Breakout",
++        .icon       = "~",
+         .available  = false,
+         .on_create  = breakout_game_create,
+         .on_destroy = breakout_game_destroy,
+@@ -50,7 +50,7 @@ static const xh_app_entry_t s_app_registry[] = {
+     {
+         .id         = XH_APP_ID_LIQUID_DUCK,
+         .name       = "LiquidDuck",
+-        .icon       = LV_SYMBOL_WIFI,
++        .icon       = "o",
+         .available  = false,
+         .on_create  = liquid_duck_create,
+         .on_destroy = liquid_duck_destroy,
+diff --git a/xiaohong/xiaohong/src/apps/snake/snake_game.c b/xiaohong/xiaohong/src/apps/snake/snake_game.c
+index 2c09d60..64d895e 100644
+--- a/xiaohong/xiaohong/src/apps/snake/snake_game.c
++++ b/xiaohong/xiaohong/src/apps/snake/snake_game.c
+@@ -142,16 +142,16 @@ static void snake_update_status(void)
+     }
+     switch (s_state) {
+         case SNAKE_STATE_READY:
+-            lv_label_set_text(s_status_label, "按确认键开始");
++            lv_label_set_text(s_status_label, "Press OK to Start");
              break;
-         }
-+        case eDisp_AppHub_Open:
-+            xh_app_hub_open();
-+            break;
-+        case eDisp_AppHub_Close:
-+            xh_app_hub_close();
-+            break;
-+        case eDisp_AppHub_Tick:
-+            xh_app_hub_tick();
-+            break;
-+
-         case eDisp_Debug_Font_Delete:
-             lv_label_set_text(full_txt, "\n字库已删除\n联网后会重新下载");
+         case SNAKE_STATE_RUNNING:
+             lv_label_set_text(s_status_label, "");
              break;
-diff --git a/xiaohong/xiaohong/src/main.c b/xiaohong/xiaohong/src/main.c
-index ec357f4..f846349 100644
---- a/xiaohong/xiaohong/src/main.c
-+++ b/xiaohong/xiaohong/src/main.c
-@@ -35,6 +35,9 @@ SOFTWARE.
- #include "net_wifi_config.h"
- #include "protocol.h"
- #include "agent_state.h"
-+#if defined(SUPPORT_LVGL)
-+#include "app_hub.h"
-+#endif
- #include "ota.h"
- #include "ota_fw_upgrade.h"
- #include "font_download.h"
-@@ -146,6 +149,13 @@ void MainTask(void)
-         }
+         case SNAKE_STATE_PAUSED:
+-            lv_label_set_text(s_status_label, "已暂停");
++            lv_label_set_text(s_status_label, "Paused");
+             break;
+         case SNAKE_STATE_GAME_OVER:
+-            lv_label_set_text(s_status_label, "游戏结束 按确认重开");
++            lv_label_set_text(s_status_label, "Game Over-Press OK");
+             break;
+         default:
+             break;
+@@ -161,7 +161,7 @@ static void snake_update_status(void)
+ static void snake_update_score(void)
+ {
+     if (s_score_label != NULL) {
+-        lv_label_set_text_fmt(s_score_label, "分数: %d", s_score);
++        lv_label_set_text_fmt(s_score_label, "Score: %d", s_score);
+     }
+ }
  
-         log_debug("[MainTask] osMessageQueueGet: msg[%d]\r\n", msg_recv);
-+        /* App Hub active: route all key events to display queue for LVGL processing */
-+        if (msg_recv < eKey_MaxCount && xh_app_hub_is_active()) {
-+            msg_send = eDisp_AppHub_KeyBase + msg_recv;
-+            osMessageQueuePut(g_disp_event_qid, (const void *) &msg_send, 0, 0);
-+            continue;
-+        }
-+
-         switch(msg_recv) {
-             case eKey_VolUp_ShortPressed: {
-                 if (get_wifi_status() == eWifi_St_ReConfiguring) {
-@@ -190,7 +200,13 @@ void MainTask(void)
-                 break;
-             }
-             case eKey_VolDw_LongPressed: {
-+                #if defined(SUPPORT_LVGL)
-+                /* VolDw long press: open App Hub (replaces brightness decrease) */
-+                msg_send = eDisp_AppHub_Open;
-+                osMessageQueuePut(g_disp_event_qid, (const void *) &msg_send, 0, 0);
-+                #else
-                 decrease_blk_level();
-+                #endif
-                 break;
-             }
-             case eKey_Wakeup_ShortPressed: {
-diff --git a/xiaohong/xiaohong/src/settings.c b/xiaohong/xiaohong/src/settings.c
-index 6de0832..f92ded8 100644
---- a/xiaohong/xiaohong/src/settings.c
-+++ b/xiaohong/xiaohong/src/settings.c
-@@ -721,6 +721,9 @@ static char *obsoleted_ota_addr_list[] =
-     "http://xiaohong-ota.yunxin360.com",  // ":8002/xiaohong/ota/",
-     "http://xhong-ota.yunxin360.com",     // "/xiaohong/ota/",
-     "http://xh-ota.atomgit.com",          // "/xiaohong/ota/",
-+    "https://xiaohong-ota.yunxin360.com", // https variant
-+    "https://xhong-ota.yunxin360.com",    // https variant
-+    "https://xh-ota.atomgit.com",         // https variant (old path)
- };
- static uint8_t obsoleted_ota_addr_list_len = sizeof(obsoleted_ota_addr_list) / sizeof(obsoleted_ota_addr_list[0]);
+@@ -313,24 +313,22 @@ void snake_game_on_key(uint8_t key_event)
+ {
+     switch (key_event) {
+         case XH_APP_KEY_UP:
+-            if (s_direction != SNAKE_DIR_DOWN) {
+-                s_next_dir = SNAKE_DIR_UP;
+-            }
++            /* VolUp = turn left (counterclockwise) */
++            if (s_direction == SNAKE_DIR_RIGHT) s_next_dir = SNAKE_DIR_UP;
++            else if (s_direction == SNAKE_DIR_UP) s_next_dir = SNAKE_DIR_LEFT;
++            else if (s_direction == SNAKE_DIR_LEFT) s_next_dir = SNAKE_DIR_DOWN;
++            else if (s_direction == SNAKE_DIR_DOWN) s_next_dir = SNAKE_DIR_RIGHT;
+             break;
+         case XH_APP_KEY_DOWN:
+-            if (s_direction != SNAKE_DIR_UP) {
+-                s_next_dir = SNAKE_DIR_DOWN;
+-            }
++            /* VolDw = turn right (clockwise) */
++            if (s_direction == SNAKE_DIR_RIGHT) s_next_dir = SNAKE_DIR_DOWN;
++            else if (s_direction == SNAKE_DIR_DOWN) s_next_dir = SNAKE_DIR_LEFT;
++            else if (s_direction == SNAKE_DIR_LEFT) s_next_dir = SNAKE_DIR_UP;
++            else if (s_direction == SNAKE_DIR_UP) s_next_dir = SNAKE_DIR_RIGHT;
+             break;
+         case XH_APP_KEY_LEFT:
+-            if (s_direction != SNAKE_DIR_RIGHT) {
+-                s_next_dir = SNAKE_DIR_LEFT;
+-            }
+-            break;
+         case XH_APP_KEY_RIGHT:
+-            if (s_direction != SNAKE_DIR_LEFT) {
+-                s_next_dir = SNAKE_DIR_RIGHT;
+-            }
++            /* Not used with 3-button layout */
+             break;
+         case XH_APP_KEY_CONFIRM:
+             if (s_state == SNAKE_STATE_READY) {
+@@ -358,8 +356,7 @@ void snake_game_on_key(uint8_t key_event)
  
- xiaohong/xiaohong/BUILD.gn                  | 20 +++++++++++++++++++-
- xiaohong/xiaohong/src/display/disp_driver.h |  6 ++++++
- xiaohong/xiaohong/src/display/lvgl_task.c   | 27 +++++++++++++++++++++++++++
- xiaohong/xiaohong/src/main.c                | 16 ++++++++++++++++
- xiaohong/xiaohong/src/settings.c            |  3 +++
- 5 files changed, 71 insertions(+), 1 deletion(-)
+     /* READY 状态下按方向键也启动游戏 */
+     if (s_state == SNAKE_STATE_READY &&
+-        (key_event == XH_APP_KEY_UP || key_event == XH_APP_KEY_DOWN ||
+-         key_event == XH_APP_KEY_LEFT || key_event == XH_APP_KEY_RIGHT)) {
++        (key_event == XH_APP_KEY_UP || key_event == XH_APP_KEY_DOWN)) {
+         s_state = SNAKE_STATE_RUNNING;
+         snake_update_status();
+     }
+diff --git a/xiaohong/xiaohong/src/apps/snake/snake_game.h b/xiaohong/xiaohong/src/apps/snake/snake_game.h
+index 119b208..3df00e0 100644
+--- a/xiaohong/xiaohong/src/apps/snake/snake_game.h
++++ b/xiaohong/xiaohong/src/apps/snake/snake_game.h
+@@ -14,13 +14,11 @@ Copyright (c) 2026 Shenzhen Open Source Co-Creation Technology Co., Ltd. (AtomGi
+ /*
+  * 贪吃蛇游戏 — XiaoHong WS63 240×240 LCD
+  *
+- * 按键：
+- *   XH_APP_KEY_UP    → 上
+- *   XH_APP_KEY_DOWN  → 下
+- *   XH_APP_KEY_LEFT  → 左
+- *   XH_APP_KEY_RIGHT → 右
+- *   XH_APP_KEY_CONFIRM → 暂停/继续
+- *   XH_APP_KEY_BACK  → 退出（由 app_hub 处理）
++ * 按键（3-button relative turning）:
++ *   XH_APP_KEY_UP    → turn left (counterclockwise)
++ *   XH_APP_KEY_DOWN  → turn right (clockwise)
++ *   XH_APP_KEY_CONFIRM → pause/resume/restart
++ *   XH_APP_KEY_BACK  → exit (handled by app_hub)
+  *
+  * 由 app_hub 调用，不需要自行创建屏幕。
+  */
