@@ -133,6 +133,10 @@ export async function startBridge({
     throw new Error("PIXELPET_PORT must be 0..65535");
   }
   if (host !== "127.0.0.1" && host !== "::1" &&
+      host !== "0.0.0.0" && host !== "::") {
+    throw new Error("Use 0.0.0.0 for LAN access so the localhost Hook stays reachable");
+  }
+  if (host !== "127.0.0.1" && host !== "::1" &&
       !process.env.PIXELPET_LAN_ACK && process.env.NODE_ENV !== "test") {
     throw new Error("LAN access needs explicit PIXELPET_LAN_ACK=1 (read-only LAN, no TLS)");
   }
