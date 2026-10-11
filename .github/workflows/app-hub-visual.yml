@@ -83,10 +83,13 @@ jobs:
             -I/tmp/lvgl -Itests/host -Ixiaohong/xiaohong/src/apps \
             tests/real_lvgl/apphub_render.c \
             xiaohong/xiaohong/src/apps/app_hub.c \
-            xiaohong/xiaohong/src/apps/app_hub_icons.c \
+            xiaohong/xiaohong/src/apps/app_registry.c \
+            xiaohong/xiaohong/src/apps/tetris/tetris_game.c \
+            xiaohong/xiaohong/src/apps/breakout/breakout_game.c \
+            xiaohong/xiaohong/src/apps/liquid_duck/liquid_duck.c \
             /tmp/lvgl-build/lib/liblvgl.a -lm -pthread \
             -o /tmp/xiaohong-lvgl-render
-      - name: Render actual LVGL 240x240 framebuffer
+      - name: Render actual LVGL 240x240 framebuffer and smoke-test games
         run: |
           mkdir -p artifacts
           /tmp/xiaohong-lvgl-render artifacts/apphub-240x240.ppm
