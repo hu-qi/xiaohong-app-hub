@@ -25,7 +25,7 @@ The reference image includes compact Chinese labels and a snake icon. Current co
 ### Input and regression
 
 - VolUp (+) short: **next**; VolDown (-) short: **previous**; Wakeup/M short: enter; Wakeup/M long: return.
-- **App Hub entry:** not assigned to a physical key yet. **Never hold + and - together**: this is XiaoHong's hardware RESET shortcut and must remain reserved. The existing software display event `eDisp_AppHub_Open` remains available for a future verified control. Long + alone increases brightness; long - alone decreases brightness.
+- **App Hub entry:** double-click M (two M short-release events within 350ms), handled entirely by MainTask and sent to LvglTask. From AI open the Hub; from the Hub list return to AI; from a game return to the Hub list. Single M is delayed ~350–390ms; M long and M 5-second holds retain their original behavior. **Never hold + and - together**: hardware RESET is reserved. Long + alone increases brightness; long - alone decreases brightness.
 - GPIO volume keys use their stock independent handlers. No key combination logic is present in the WS63 app, and no LVGL operation runs in GPIO interrupts.
 - Native CI verifies the actual first-generation key driver and explicitly rejects any App Hub software chord event. Hardware reset cannot be overridden by software.
 - Wakeup/M 5-second Wi-Fi reconfiguration remains handled in MainTask.
